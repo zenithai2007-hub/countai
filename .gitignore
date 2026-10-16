@@ -1,0 +1,28 @@
+# Android / Gradle
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+
+# Signing
+*.jks
+*.keystore
+
+# Room schemas (generated on build if enabled)
+/app/schemas/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model is downloaded via scripts/download_model.sh; keep the checked-in
+# copy out of git by default (it is ~4 MB). Comment the line below to
+# commit the model with the repo.
+app/src/main/assets/detect.tflite

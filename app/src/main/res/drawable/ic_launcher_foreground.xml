@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- dark backdrop -->
+    <path
+        android:fillColor="#FF101010"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- green counting reticle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF00E676"
+        android:strokeWidth="5"
+        android:pathData="M54,28m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+    <path
+        android:fillColor="#FF00E676"
+        android:pathData="M54,48m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
+    <!-- crosshair ticks -->
+    <path
+        android:strokeColor="#FF00E676"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,14v10M54,84v10M14,54h10M84,54h10" />
+</vector>

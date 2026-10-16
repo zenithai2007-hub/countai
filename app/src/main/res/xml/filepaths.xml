@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Saved session photos (app-internal) -->
+    <files-path
+        name="sessions"
+        path="sessions/" />
+    <!-- Exported CSV files live in the cache dir -->
+    <cache-path
+        name="shared"
+        path="." />
+</paths>

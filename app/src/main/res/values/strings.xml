@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CountAI</string>
+
+    <!-- Tabs -->
+    <string name="tab_camera">Camera</string>
+    <string name="tab_history">History</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Camera screen -->
+    <string name="start_camera">Start Camera</string>
+    <string name="stop_camera">Stop</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="reset">Reset</string>
+    <string name="capture_save">Save Result</string>
+    <string name="photo_count">Photo</string>
+    <string name="share">Share</string>
+    <string name="live_label">LIVE</string>
+    <string name="session_total_label">SESSION TOTAL</string>
+    <string name="count_only_label">Count only:</string>
+    <string name="chip_all">All</string>
+    <string name="tap_start_camera">Tap “Start Camera”, then point at objects.</string>
+    <string name="point_at_objects">Point at objects — counting live…</string>
+    <string name="status_paused">Paused — camera still on, counting frozen.</string>
+    <string name="status_reset">Counters reset.</string>
+    <string name="mode_changed">Filter changed — counters reset.</string>
+    <string name="low_confidence_warning">Low confidence — improve lighting</string>
+
+    <!-- Permissions -->
+    <string name="camera_rationale_title">Camera access needed</string>
+    <string name="camera_rationale_message">CountAI uses your camera to detect and count objects in real time. The video is processed on your phone only — nothing is uploaded anywhere.</string>
+    <string name="continue_text">Continue</string>
+    <string name="cancel">Cancel</string>
+    <string name="permission_denied">Camera permission denied — counting needs the camera to see.</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="go_to_settings_message">You permanently denied the camera permission. Open Settings to allow it, or counting cannot work.</string>
+
+    <!-- Model / errors -->
+    <string name="model_missing">Detection model missing.\nRun scripts/download_model.sh on your computer, then rebuild the app.</string>
+    <string name="model_loading">Loading AI model…</string>
+
+    <!-- Save / share -->
+    <string name="saved_toast">Result saved to History ✓</string>
+    <string name="nothing_to_count">Nothing counted yet — point the camera at some objects first.</string>
+    <string name="share_subject">CountAI result</string>
+    <string name="share_header">CountAI result — %1$s</string>
+    <string name="share_total_line">Total objects: %1$d</string>
+    <string name="save_to_history">Save to History</string>
+    <string name="close">Close</string>
+
+    <!-- Photo mode -->
+    <string name="photo_failed">Could not load that photo.</string>
+    <string name="detecting">Detecting…</string>
+    <string name="photo_no_objects">No objects found in this photo.\nTry better lighting or a closer shot.</string>
+
+    <!-- History -->
+    <string name="no_history">No saved sessions yet.\nCount something, then tap “Save Result”.</string>
+    <string name="export_csv">Export CSV</string>
+    <string name="exported_toast">CSV ready — choose an app to share it.</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm_title">Delete this session?</string>
+    <string name="delete_confirm_message">The saved counts and photo will be removed permanently.</string>
+    <string name="deleted_toast">Session deleted.</string>
+    <string name="mode_live">Live camera</string>
+    <string name="mode_photo">Photo</string>
+
+    <!-- Settings -->
+    <string name="confidence_title">Detection confidence</string>
+    <string name="confidence_hint">Lower finds more objects but makes more mistakes. 0.50 is a good default.</string>
+    <string name="fps_title">Detection speed</string>
+    <string name="fps_hint">Frames analyzed per second. Lower saves battery and runs smoother on old phones.</string>
+    <string name="gpu_title">GPU acceleration</string>
+    <string name="gpu_hint">Tried first when your phone supports it; falls back to CPU automatically.</string>
+    <string name="nnapi_title">NNAPI (Android neural API)</string>
+    <string name="about_model_title">About the AI model</string>
+    <string name="model_info_text">CountAI runs a quantized SSD-MobileNet object detector fully on your phone — no internet needed. It recognizes 80 everyday COCO classes (person, bottle, chair, car, cup, dog, cat, …). Note: COCO has no “box” class — cardboard boxes are usually detected as “suitcase”, “book” or “refrigerator” depending on shape.</string>
+    <string name="custom_model_title">Use your own model</string>
+    <string name="custom_model_text">To count your own products, fruits or inventory: train a model (e.g. in Teachable Machine or with YOLO → TFLite), then replace app/src/main/assets/detect.tflite and labels.txt and rebuild. The Detector interface keeps the UI untouched. Full steps are in the README.</string>
+    <string name="version_text">CountAI v1.0.0 — on-device AI, private by design.</string>
+</resources>

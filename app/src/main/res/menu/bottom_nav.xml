@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_camera"
+        android:title="@string/tab_camera"
+        android:icon="@android:drawable/ic_menu_camera" />
+    <item
+        android:id="@+id/nav_history"
+        android:title="@string/tab_history"
+        android:icon="@android:drawable/ic_menu_recent_history" />
+    <item
+        android:id="@+id/nav_settings"
+        android:title="@string/tab_settings"
+        android:icon="@android:drawable/ic_menu_preferences" />
+</menu>
