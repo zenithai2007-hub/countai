@@ -77,5 +77,167 @@
     <string name="model_info_text">CountAI runs a quantized SSD-MobileNet object detector fully on your phone — no internet needed. It recognizes 80 everyday COCO classes (person, bottle, chair, car, cup, dog, cat, …). Note: COCO has no “box” class — cardboard boxes are usually detected as “suitcase”, “book” or “refrigerator” depending on shape.</string>
     <string name="custom_model_title">Use your own model</string>
     <string name="custom_model_text">To count your own products, fruits or inventory: train a model (e.g. in Teachable Machine or with YOLO → TFLite), then replace app/src/main/assets/detect.tflite and labels.txt and rebuild. The Detector interface keeps the UI untouched. Full steps are in the README.</string>
-    <string name="version_text">CountAI v1.0.0 — on-device AI, private by design.</string>
+    <string name="version_text">CountAI v2.0.0 — on-device AI, private by design.</string>
+
+    <!-- Tabs -->
+    <string name="tab_tools">Tools</string>
+    <string name="tools_subtitle">Advanced counting modes</string>
+
+    <!-- Command bar + voice -->
+    <string name="command_hint">Type: "count only bottles" or "how many chairs?"</string>
+    <string name="command_go">Go</string>
+    <string name="command_no_match">I did not recognize an object in that. Try "count only bottles".</string>
+    <string name="command_active">Counting: %1$s</string>
+    <string name="attr_unsupported">I can filter by color, but not by "%1$s" yet — counting all matching objects.</string>
+    <string name="voice_answer">%1$s: %2$d</string>
+    <string name="voice_no_speech">Did not hear anything — try again.</string>
+    <string name="voice_failed">Voice recognition is not available on this phone.</string>
+    <string name="mic_listening">Listening… speak now</string>
+    <string name="mic_desc">Voice command</string>
+    <string name="mic_permission_needed">Microphone permission is needed for voice commands.</string>
+
+    <!-- Verify count / trust -->
+    <string name="verify_count">Verify Count</string>
+    <string name="verify_title">Review uncertain detections</string>
+    <string name="verify_remove">Remove</string>
+    <string name="verify_removed">Removed one uncertain %1$s</string>
+    <string name="no_questionable">No uncertain detections right now — counts look solid.</string>
+    <string name="accuracy_disclaimer">AI counts are estimates, never 100%%. Verify anything important.</string>
+
+    <!-- Badges -->
+    <string name="offline_badge">OFFLINE MODE</string>
+    <string name="ondevice_badge">100% on-device</string>
+
+    <!-- Coach marks -->
+    <string name="coach_1">👋 Welcome to CountAI!\n\n1. Tap START CAMERA and point at objects — the AI counts them live.</string>
+    <string name="coach_2">2. Type or speak "count only bottles" to count just what you ask for.</string>
+    <string name="coach_3">3. Open TOOLS for CountCam, IN/OUT line, video, inventory and more.</string>
+    <string name="coach_next">Next</string>
+    <string name="coach_done">Start counting</string>
+
+    <!-- CountCam -->
+    <string name="countcam_title">CountCam</string>
+    <string name="countcam_desc">One tap. Point at objects.\nCountAI detects, tracks and counts — then shows your result card.</string>
+    <string name="smart_count">⚡ SMART COUNT</string>
+    <string name="countcam_stop">Stop</string>
+    <string name="countcam_done">Done</string>
+    <string name="counting_now">COUNTING…</string>
+    <string name="count_complete">COUNT COMPLETE ✅</string>
+    <string name="btn_recount">Recount</string>
+    <string name="btn_export">Export</string>
+    <string name="save">Save</string>
+    <string name="countcam_share_title">CountCam result</string>
+    <string name="camera_preview_desc">Camera preview</string>
+
+    <!-- IN/OUT -->
+    <string name="in_label">IN ↓</string>
+    <string name="out_label">OUT ↑</string>
+    <string name="net_label">NET</string>
+    <string name="drag_line_hint">Drag the yellow line, then point the camera at the flow.</string>
+    <string name="back_desc">Back</string>
+
+    <!-- Video -->
+    <string name="video_title">Video Counting</string>
+    <string name="video_desc">Pick a video — CountAI samples frames and counts every unique object in it.</string>
+    <string name="pick_video">Pick a video</string>
+    <string name="analyzing_video">Analyzing video…</string>
+    <string name="analyzing_video_pct">Analyzing video… %1$d%%</string>
+    <string name="video_no_objects">No objects found in this video.</string>
+    <string name="video_done">Unique objects in this video:</string>
+    <string name="premium_tag">Premium</string>
+    <string name="premium_locked">This is a Premium feature — free while CountAI is in beta.</string>
+
+    <!-- Tools hub -->
+    <string name="tool_countcam">⚡ CountCam</string>
+    <string name="tool_countcam_desc">One-tap smart count with a shareable result card.</string>
+    <string name="tool_inout">🚪 IN / OUT Counter</string>
+    <string name="tool_inout_desc">Drag a virtual line; count what crosses it.</string>
+    <string name="tool_video">🎥 Video Counting</string>
+    <string name="tool_video_desc">Count unique objects across a whole video.</string>
+    <string name="tool_diff">📊 Photo Compare</string>
+    <string name="tool_diff_desc">Before/after photos: see exactly what changed.</string>
+    <string name="tool_inventory">📦 Smart Inventory</string>
+    <string name="tool_inventory_desc">Name your products, track stock counts.</string>
+    <string name="tool_dashboard">💼 Business Dashboard</string>
+    <string name="tool_dashboard_desc">Stats, charts and exports for your business.</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">Smart Inventory</string>
+    <string name="inventory_desc">Give your products names and map each to something the AI can see.</string>
+    <string name="add_product">+ Add product</string>
+    <string name="inventory_empty">No products yet.\nTap "+ Add product" to start your inventory.</string>
+    <string name="product_name_hint">Product name (e.g. Product A)</string>
+    <string name="maps_to_label">Looks like (what the AI detects):</string>
+    <string name="enter_count_hint">Counted quantity</string>
+    <string name="invalid_count">Enter a valid number.</string>
+    <string name="count_for_product">Count for %1$s</string>
+    <string name="update_count">Update count</string>
+
+    <!-- Difference detector -->
+    <string name="diff_title">Photo Compare</string>
+    <string name="diff_desc">Pick a BEFORE and an AFTER photo. CountAI reports what changed.</string>
+    <string name="pick_before">Pick BEFORE</string>
+    <string name="pick_after">Pick AFTER</string>
+    <string name="diff_before_desc">Before photo</string>
+    <string name="diff_after_desc">After photo</string>
+    <string name="diff_pick_hint">Pick both photos to compare.</string>
+    <string name="diff_no_change">No changes detected between the two photos.</string>
+    <string name="diff_changed_count">%1$d object types changed:</string>
+    <string name="diff_col_object">Object</string>
+    <string name="diff_col_before">Before</string>
+    <string name="diff_col_after">After</string>
+    <string name="diff_col_change">Change</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Business Dashboard</string>
+    <string name="stat_today">Today</string>
+    <string name="stat_week">This week</string>
+    <string name="stat_month">This month</string>
+    <string name="stat_sessions">Sessions</string>
+    <string name="stat_inventory">Inventory</string>
+    <string name="dashboard_inventory_line">%1$d products · %2$d units</string>
+    <string name="chart_top_objects">Top counted objects</string>
+    <string name="dashboard_report_title">CountAI business report</string>
+    <string name="dashboard_sessions_line">Based on %1$d counting sessions.</string>
+
+    <!-- Smart search -->
+    <string name="search_hint">Search: "last week box counts", "highest bottle count"…</string>
+    <string name="search_go">Search</string>
+    <string name="search_no_results">Nothing found — try "today" or "last week".</string>
+    <string name="search_found">%1$d sessions found</string>
+    <string name="search_highest_result">Highest %1$s count: %2$d</string>
+
+    <!-- Settings: language -->
+    <string name="lang_title">Language / زبان</string>
+
+    <!-- Settings: performance -->
+    <string name="perf_title">Performance mode</string>
+    <string name="perf_hint">Lower FPS saves battery and runs smoother on older phones.</string>
+    <string name="perf_set">%1$s — %2$d FPS</string>
+    <string name="perf_suggest_title">Battery Saver suggested</string>
+    <string name="perf_suggest_text">This phone has limited memory. Switch to Battery Saver for smoother counting?</string>
+    <string name="perf_battery">Battery Saver</string>
+
+    <!-- Settings: location -->
+    <string name="location_title">Save location with history</string>
+    <string name="location_hint">Stores a coarse location with each saved session. Off by default.</string>
+    <string name="location_denied">Location permission denied — locations will not be saved.</string>
+
+    <!-- Settings: privacy -->
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_text">CountAI processes everything on your phone — camera, photos and videos never leave the device. History is stored only in the app. Location is saved only if you enable it above.</string>
+
+    <!-- Settings: custom model -->
+    <string name="custom_model_import">Import custom model</string>
+    <string name="custom_model_clear">Use bundled model</string>
+    <string name="custom_model_pick_help">Pick your trained .tflite file first, then its labels .txt file.</string>
+    <string name="custom_model_imported">Custom model imported ✓ — it will be used from now on.</string>
+    <string name="custom_model_failed">Import failed — check the files and try again.</string>
+    <string name="custom_model_cleared">Back to the bundled model.</string>
+    <string name="custom_model_active">Using your custom model ✓</string>
+    <string name="custom_model_bundled">Using the bundled everyday-objects model.</string>
+
+    <!-- Settings: premium -->
+    <string name="premium_title">CountAI Premium</string>
+    <string name="premium_text">Basic counting is free forever. Premium adds: video counting, photo compare, advanced reports, business dashboard and cloud history. Everything is unlocked while CountAI is in beta.</string>
 </resources>

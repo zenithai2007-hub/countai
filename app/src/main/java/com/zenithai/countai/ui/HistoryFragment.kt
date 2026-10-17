@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -19,6 +20,7 @@ import com.zenithai.countai.R
 import com.zenithai.countai.data.SessionEntity
 import com.zenithai.countai.data.SessionRepository
 import com.zenithai.countai.databinding.FragmentHistoryBinding
+import com.zenithai.countai.util.SmartSearch
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,13 +55,66 @@ class HistoryFragment : Fragment() {
         binding.historyList.adapter = adapter
 
         repository.sessions().observe(viewLifecycleOwner) { list ->
-            adapter.submitList(list)
-            val empty = list.isEmpty()
-            binding.emptyState.visibility = if (empty) View.VISIBLE else View.GONE
-            binding.historyList.visibility = if (empty) View.GONE else View.VISIBLE
+            fullList = list
+            applySearch()
         }
 
         binding.btnExportCsv.setOnClickListener { exportCsv() }
+        binding.btnSearch.setOnClickListener { applySearch() }
+        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                applySearch()
+                true
+            } else false
+        }
+    }
+
+    private var fullList: List<SessionEntity> = emptyList()
+
+    /** Natural-language search over history ("last week box counts"). */
+    private fun applySearch() {
+        val b = _binding ?: return
+        val query = b.etSearch.text.toString().trim()
+        if (query.isEmpty()) {
+            b.tvSearchResult.visibility = View.GONE
+            adapter.submitList(fullList)
+            updateEmpty(fullList.isEmpty())
+            return
+        }
+        val req = SmartSearch.parse(query)
+        if (req.wantMax) {
+            val (best, count) = SmartSearch.highest(fullList, req.label)
+            if (best == null || count == 0) {
+                b.tvSearchResult.visibility = View.VISIBLE
+                b.tvSearchResult.text = getString(R.string.search_no_results)
+                adapter.submitList(emptyList())
+                updateEmpty(true)
+            } else {
+                val label = req.label ?: getString(R.string.chip_all)
+                b.tvSearchResult.visibility = View.VISIBLE
+                b.tvSearchResult.text = getString(R.string.search_highest_result, label, count)
+                adapter.submitList(listOf(best))
+                updateEmpty(false)
+            }
+            return
+        }
+        val filtered = SmartSearch.filter(fullList, req)
+        if (filtered.isEmpty()) {
+            b.tvSearchResult.visibility = View.VISIBLE
+            b.tvSearchResult.text = getString(R.string.search_no_results)
+        } else {
+            b.tvSearchResult.visibility = View.VISIBLE
+            b.tvSearchResult.text = getString(R.string.search_found, filtered.size)
+        }
+        adapter.submitList(filtered)
+        updateEmpty(filtered.isEmpty())
+    }
+
+    private fun updateEmpty(empty: Boolean) {
+        _binding?.let {
+            it.emptyState.visibility = if (empty) View.VISIBLE else View.GONE
+            it.historyList.visibility = if (empty) View.GONE else View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {

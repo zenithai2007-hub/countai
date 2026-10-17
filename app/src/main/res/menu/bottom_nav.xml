@@ -5,6 +5,10 @@
         android:title="@string/tab_camera"
         android:icon="@android:drawable/ic_menu_camera" />
     <item
+        android:id="@+id/nav_tools"
+        android:title="@string/tab_tools"
+        android:icon="@android:drawable/ic_menu_agenda" />
+    <item
         android:id="@+id/nav_history"
         android:title="@string/tab_history"
         android:icon="@android:drawable/ic_menu_recent_history" />

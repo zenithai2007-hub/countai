@@ -4,6 +4,10 @@
 
     <!-- Camera is required at runtime; requested with a rationale dialog. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Voice commands (optional; requested only when the mic button is tapped). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Coarse location in history (optional; default OFF in Settings). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />

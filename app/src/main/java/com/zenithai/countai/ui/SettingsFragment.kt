@@ -1,22 +1,61 @@
 package com.zenithai.countai.ui
 
+import android.Manifest
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.zenithai.countai.R
 import com.zenithai.countai.databinding.FragmentSettingsBinding
+import com.zenithai.countai.detection.CustomModelImporter
+import com.zenithai.countai.util.LanguageManager
+import com.zenithai.countai.util.PerformanceManager
 import com.zenithai.countai.util.Prefs
 
 /**
- * Settings. Confidence + FPS apply live; GPU/NNAPI take effect the next time
- * the camera screen resumes (the detector is rebuilt there).
+ * Settings: confidence, GPU/NNAPI, language (EN/UR/Roman), performance
+ * preset, location toggle, privacy info, custom model import, premium info.
  */
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
+
+    private var pendingModelUri: Uri? = null
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        binding.switchLocation.isChecked = granted
+        Prefs.setLocationEnabled(requireContext(), granted)
+        if (!granted) toast(R.string.location_denied)
+    }
+
+    private val modelPicker = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            pendingModelUri = uri
+            labelsPicker.launch("text/*")
+        }
+    }
+
+    private val labelsPicker = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        val modelUri = pendingModelUri
+        pendingModelUri = null
+        if (uri != null && modelUri != null) {
+            importCustomModel(modelUri, uri)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,13 +79,11 @@ class SettingsFragment : Fragment() {
             updateConfidenceLabel()
         })
 
-        // FPS: SeekBar 0..10  ->  5..15
-        binding.seekFps.progress = Prefs.fps(requireContext()) - 5
-        updateFpsLabel()
-        binding.seekFps.setOnSeekBarChangeListener(simpleListener {
-            prefs.edit().putInt(Prefs.FPS, 5 + it).apply()
-            updateFpsLabel()
-        })
+        // FPS slider retired in v2 — performance presets control FPS now.
+        binding.seekFps.visibility = View.GONE
+        binding.tvFpsValue.visibility = View.GONE
+        binding.tvFpsTitle.visibility = View.GONE
+        binding.tvFpsHint.visibility = View.GONE
 
         binding.switchGpu.isChecked = Prefs.useGpu(requireContext())
         binding.switchGpu.setOnCheckedChangeListener { _, checked ->
@@ -57,6 +94,36 @@ class SettingsFragment : Fragment() {
         binding.switchNnapi.setOnCheckedChangeListener { _, checked ->
             prefs.edit().putBoolean(Prefs.NNAPI, checked).apply()
         }
+
+        buildLanguageChips()
+        buildPerfChips()
+
+        binding.switchLocation.isChecked = Prefs.locationEnabled(requireContext())
+        binding.switchLocation.setOnCheckedChangeListener { _, checked ->
+            if (checked) {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            } else {
+                Prefs.setLocationEnabled(requireContext(), false)
+            }
+        }
+
+        binding.btnImportModel.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.custom_model_import)
+                .setMessage(R.string.custom_model_pick_help)
+                .setPositiveButton(R.string.continue_text) { _, _ ->
+                    modelPicker.launch("*/*")
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+        binding.btnClearModel.setOnClickListener {
+            CustomModelImporter.clear(requireContext())
+            updateCustomModelStatus()
+            toast(R.string.custom_model_cleared)
+        }
+        updateCustomModelStatus()
+        maybeSuggestBatterySaver()
     }
 
     override fun onDestroyView() {
@@ -64,13 +131,104 @@ class SettingsFragment : Fragment() {
         _binding = null
     }
 
+    private fun buildLanguageChips() {
+        val group = binding.langChips
+        group.removeAllViews()
+        val current = LanguageManager.current(requireContext())
+        for (code in listOf(
+            LanguageManager.ENGLISH,
+            LanguageManager.URDU,
+            LanguageManager.ROMAN_URDU,
+        )) {
+            val chip = Chip(requireContext()).apply {
+                text = LanguageManager.displayName(code)
+                isCheckable = true
+                isChecked = code == current
+                tag = code
+                id = View.generateViewId()
+                setOnClickListener {
+                    LanguageManager.setLanguage(requireContext(), code)
+                    // Recreate so every string reloads in the new language.
+                    activity?.recreate()
+                }
+            }
+            group.addView(chip)
+        }
+    }
+
+    private fun buildPerfChips() {
+        val group = binding.perfChips
+        group.removeAllViews()
+        val current = Prefs.perfMode(requireContext())
+        for (mode in listOf(
+            PerformanceManager.MODE_BATTERY_SAVER,
+            PerformanceManager.MODE_BALANCED,
+            PerformanceManager.MODE_HIGH_ACCURACY,
+        )) {
+            val chip = Chip(requireContext()).apply {
+                text = PerformanceManager.displayName(mode)
+                isCheckable = true
+                isChecked = mode == current
+                tag = mode
+                id = View.generateViewId()
+                setOnClickListener {
+                    Prefs.setPerfMode(requireContext(), mode)
+                    val fps = PerformanceManager.fpsFor(mode)
+                    toast(getString(R.string.perf_set, PerformanceManager.displayName(mode), fps))
+                    buildPerfChips()
+                }
+            }
+            group.addView(chip)
+        }
+    }
+
+    private fun importCustomModel(modelUri: Uri, labelsUri: Uri) {
+        val result = CustomModelImporter.import(requireContext(), modelUri, labelsUri)
+        if (result != null) {
+            toast(R.string.custom_model_imported)
+        } else {
+            toast(R.string.custom_model_failed)
+        }
+        updateCustomModelStatus()
+    }
+
+    private fun updateCustomModelStatus() {
+        _binding?.tvCustomModelStatus?.text = if (
+            CustomModelImporter.isCustomActive(requireContext())
+        ) {
+            getString(R.string.custom_model_active)
+        } else {
+            getString(R.string.custom_model_bundled)
+        }
+    }
+
+    private fun maybeSuggestBatterySaver() {
+        val ctx = requireContext()
+        if (!Prefs.perfSuggested(ctx) && PerformanceManager.shouldSuggestBatterySaver(ctx)) {
+            Prefs.setPerfSuggested(ctx)
+            MaterialAlertDialogBuilder(ctx)
+                .setTitle(R.string.perf_suggest_title)
+                .setMessage(R.string.perf_suggest_text)
+                .setPositiveButton(R.string.perf_battery) { _, _ ->
+                    Prefs.setPerfMode(ctx, PerformanceManager.MODE_BATTERY_SAVER)
+                    buildPerfChips()
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+    }
+
     private fun updateConfidenceLabel() {
         binding.tvConfidenceValue.text =
             String.format("%.2f", Prefs.confidence(requireContext()))
     }
 
-    private fun updateFpsLabel() {
-        binding.tvFpsValue.text = "${Prefs.fps(requireContext())} FPS"
+    private fun toast(resId: Int) {
+        context?.let { Toast.makeText(it, resId, Toast.LENGTH_SHORT).show() }
+    }
+
+    private fun toast(text: String) {
+        context?.let { Toast.makeText(it, text, Toast.LENGTH_SHORT).show() }
     }
 
     private fun simpleListener(onChange: (Int) -> Unit) =

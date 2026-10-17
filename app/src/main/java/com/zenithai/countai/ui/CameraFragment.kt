@@ -1,23 +1,24 @@
 package com.zenithai.countai.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.ImageFormat
-import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.YuvImage
-import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
 import android.util.Size
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -34,16 +35,22 @@ import com.zenithai.countai.data.SessionRepository
 import com.zenithai.countai.databinding.DialogDetectionResultBinding
 import com.zenithai.countai.databinding.FragmentCameraBinding
 import com.zenithai.countai.databinding.ItemCountRowBinding
+import com.zenithai.countai.detection.ColorFilter
 import com.zenithai.countai.detection.Detector
 import com.zenithai.countai.detection.ModelLoadException
+import com.zenithai.countai.detection.ModelManager
 import com.zenithai.countai.detection.ObjectTracker
-import com.zenithai.countai.detection.TfliteObjectDetector
+import com.zenithai.countai.detection.TrackedObject
+import com.zenithai.countai.util.FrameConverter
+import com.zenithai.countai.util.CommandParser
+import com.zenithai.countai.util.LocationHelper
+import com.zenithai.countai.util.NetworkMonitor
 import com.zenithai.countai.util.PermissionHelper
 import com.zenithai.countai.util.Prefs
+import com.zenithai.countai.util.VoiceHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -85,6 +92,17 @@ class CameraFragment : Fragment() {
     /** Empty = count everything; otherwise only these labels are counted. */
     private var selectedLabels: Set<String> = emptySet()
 
+    /** Natural-language command filter (null = none). Overrides chips. */
+    private var commandLabels: Set<String>? = null
+    private var commandColor: String? = null
+    private var commandText: String? = null
+
+    /** Last visible tracked objects (for Verify Count). */
+    private var lastVisible: List<TrackedObject> = emptyList()
+
+    private var voiceHelper: VoiceHelper? = null
+    private var listeningToast: Toast? = null
+
     private var lastRowsSignature = ""
 
     private lateinit var repository: SessionRepository
@@ -105,6 +123,13 @@ class CameraFragment : Fragment() {
     private val photoPicker = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri -> if (uri != null) detectOnPhoto(uri) }
+
+    private val micPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) startVoiceListening()
+        else toast(R.string.mic_permission_needed)
+    }
 
     // ---------------- lifecycle ----------------
 
@@ -128,12 +153,28 @@ class CameraFragment : Fragment() {
         binding.btnCapture.setOnClickListener { captureAndSave() }
         binding.btnPhoto.setOnClickListener { photoPicker.launch("image/*") }
         binding.btnShare.setOnClickListener { shareCurrentResult() }
+        binding.btnVerify.setOnClickListener { showVerifyDialog() }
+        binding.btnMic.setOnClickListener { onMicTapped() }
+        binding.btnSendCommand.setOnClickListener {
+            processCommand(binding.etCommand.text.toString())
+        }
+        binding.etCommand.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)
+            ) {
+                processCommand(binding.etCommand.text.toString())
+                true
+            } else false
+        }
         updateButtons()
         updateStatus(getString(R.string.tap_start_camera))
+        updateOfflineBadge()
+        maybeShowCoachMarks()
     }
 
     override fun onResume() {
         super.onResume()
+        updateOfflineBadge()
         // (Re)build the detector on a background thread so Settings changes
         // (GPU/NNAPI toggles) take effect when coming back.
         lifecycleScope.launch(Dispatchers.Default) {
@@ -163,6 +204,9 @@ class CameraFragment : Fragment() {
         super.onDestroyView()
         cameraExecutor?.shutdown()
         cameraExecutor = null
+        voiceHelper?.destroy()
+        voiceHelper = null
+        listeningToast?.cancel()
         _binding = null
     }
 
@@ -172,11 +216,7 @@ class CameraFragment : Fragment() {
         var d = detector
         if (d == null) {
             d = try {
-                TfliteObjectDetector(
-                    requireContext(),
-                    useGpu = Prefs.useGpu(requireContext()),
-                    useNnapi = Prefs.useNnapi(requireContext()),
-                )
+                ModelManager.createDetector(requireContext())
             } catch (e: ModelLoadException) {
                 Log.e(TAG, "model missing", e)
                 null
@@ -257,7 +297,7 @@ class CameraFragment : Fragment() {
             val det = if (!paused) ensureDetector() else null
             if (det != null) {
                 val now = SystemClock.uptimeMillis()
-                val intervalMs = 1000L / Prefs.fps(requireContext())
+                val intervalMs = 1000L / Prefs.effectiveFps(requireContext())
                 if (now - lastAnalyzeMs >= intervalMs) {
                     lastAnalyzeMs = now
                     analyzeFrame(proxy, det)
@@ -274,13 +314,8 @@ class CameraFragment : Fragment() {
         val image = proxy.image ?: return
         val rotation = proxy.imageInfo.rotationDegrees
 
-        var bmp = yuvToBitmap(image) ?: return
-        if (rotation != 0) {
-            val m = Matrix().apply { postRotate(rotation.toFloat()) }
-            val rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
-            bmp.recycle()
-            bmp = rotated
-        }
+        var bmp = FrameConverter.yuvToBitmap(image) ?: return
+        bmp = FrameConverter.rotate(bmp, rotation)
 
         frameW = bmp.width
         frameH = bmp.height
@@ -292,13 +327,21 @@ class CameraFragment : Fragment() {
 
         val threshold = Prefs.confidence(requireContext())
         var detections = det.detect(square, threshold)
+
+        // Label filter: chips first, voice/text command overrides.
+        val filterLabels = effectiveFilterLabels()
+        if (filterLabels.isNotEmpty()) {
+            detections = detections.filter { it.label in filterLabels }
+        }
+        // Color filter ("red bottles"): classify inside each box.
+        val wantColor = commandColor
+        if (wantColor != null) {
+            detections = detections.filter { ColorFilter.classify(square, it.box) == wantColor }
+        }
         square.recycle()
 
-        if (selectedLabels.isNotEmpty()) {
-            detections = detections.filter { it.label in selectedLabels }
-        }
-
         val visible = tracker.update(detections)
+        lastVisible = visible
         val live = tracker.liveCounts()
         val session = effectiveSessionCounts()
         val avgConf = if (visible.isNotEmpty()) {
@@ -318,58 +361,15 @@ class CameraFragment : Fragment() {
         }
     }
 
-    // ---------------- YUV conversion ----------------
-
-    private fun yuvToBitmap(image: Image): Bitmap? = try {
-        val nv21 = yuv420ToNv21(image)
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 80, out)
-        val bytes = out.toByteArray()
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-    } catch (e: Exception) {
-        Log.w(TAG, "YUV conversion failed", e)
-        null
-    }
-
-    /**
-     * Correct YUV_420_888 → NV21 handling arbitrary row/pixel strides
-     * (the naive plane-concat breaks on many devices).
-     */
-    private fun yuv420ToNv21(image: Image): ByteArray {
-        val width = image.width
-        val height = image.height
-        val yPlane = image.planes[0]
-        val uPlane = image.planes[1]
-        val vPlane = image.planes[2]
-        val yBuf = yPlane.buffer
-        val uBuf = uPlane.buffer
-        val vBuf = vPlane.buffer
-        val yRowStride = yPlane.rowStride
-        val uvRowStride = uPlane.rowStride
-        val uvPixelStride = uPlane.pixelStride
-
-        val nv21 = ByteArray(width * height * 3 / 2)
-        var pos = 0
-        if (yRowStride == width) {
-            yBuf.get(nv21, 0, width * height)
-            pos = width * height
-        } else {
-            val row = ByteArray(yRowStride)
-            for (r in 0 until height) {
-                yBuf.get(row)
-                System.arraycopy(row, 0, nv21, pos, width)
-                pos += width
-            }
+    /** Chip selection, or the voice/text command filter when active. */
+    private fun effectiveFilterLabels(): Set<String> {
+        val cmd = commandLabels
+        if (cmd != null) {
+            return if ("box" in cmd) {
+                (cmd - "box") + CommandParser.expandBoxLabel()
+            } else cmd
         }
-        for (r in 0 until height / 2) {
-            for (c in 0 until width / 2) {
-                val dst = pos + r * width + c * 2
-                nv21[dst] = vBuf.get(r * uvRowStride + c * uvPixelStride)
-                nv21[dst + 1] = uBuf.get(r * uvRowStride + c * uvPixelStride)
-            }
-        }
-        return nv21
+        return selectedLabels
     }
 
     // ---------------- counts UI ----------------
@@ -433,6 +433,7 @@ class CameraFragment : Fragment() {
     private fun resetSession() {
         tracker.reset()
         manualAdjust.clear()
+        lastVisible = emptyList()
         lastRowsSignature = ""
         val b = _binding ?: return
         b.overlay.clear()
@@ -464,6 +465,11 @@ class CameraFragment : Fragment() {
             val checked = group.findViewById<Chip>(checkedIds.first()) ?: return@setOnCheckedStateChangeListener
             val raw = checked.tag as String?
             selectedLabels = if (raw == null) emptySet() else setOf(raw)
+            // Manual chip choice clears any voice/text command filter.
+            commandLabels = null
+            commandColor = null
+            commandText = null
+            _binding?.etCommand?.setText("")
             resetSession()
             updateStatus(getString(R.string.mode_changed))
         }
@@ -485,7 +491,10 @@ class CameraFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                repository.saveSession(counts, bitmap, "live")
+                repository.saveSession(
+                    counts, bitmap, "live",
+                    LocationHelper.lastKnownLabel(requireContext()),
+                )
                 toast(R.string.saved_toast)
             } catch (e: Exception) {
                 Log.e(TAG, "save failed", e)
@@ -622,6 +631,174 @@ class CameraFragment : Fragment() {
         }
         dlg.dlgClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+    // ---------------- voice + text commands ----------------
+
+    private fun processCommand(raw: String) {
+        val text = raw.trim()
+        if (text.isEmpty()) return
+        val cmd = CommandParser.parse(text)
+        if (cmd.labels.isEmpty() && cmd.color == null) {
+            if (cmd.unsupportedAttribute != null) {
+                toast(getString(R.string.attr_unsupported, cmd.unsupportedAttribute))
+            } else {
+                toast(R.string.command_no_match)
+            }
+            return
+        }
+        // "count everything" reset phrase clears the command filter.
+        if ("everything" in text.lowercase() || "sab kuch" in text.lowercase() || "سب کچھ" in text) {
+            commandLabels = null
+            commandColor = null
+        } else {
+            commandLabels = cmd.labels.ifEmpty { null }
+            commandColor = cmd.color
+        }
+        commandText = text
+        if (cmd.unsupportedAttribute != null && cmd.labels.isNotEmpty()) {
+            toast(getString(R.string.attr_unsupported, cmd.unsupportedAttribute))
+        }
+        resetSession()
+        val desc = buildString {
+            cmd.color?.let { append("$it ") }
+            append(if (cmd.labels.isEmpty()) getString(R.string.chip_all) else cmd.labels.joinToString(", "))
+        }
+        updateStatus(getString(R.string.command_active, desc))
+        if (cmd.isQuestion) {
+            // Answer from the current (just-reset, so next-frame) counts — reply shortly.
+            binding.tvStatus.postDelayed({
+                if (!isAdded) return@postDelayed
+                val session = effectiveSessionCounts()
+                val total = session.values.sum()
+                val answer = getString(R.string.voice_answer, desc, total)
+                updateStatus(answer)
+                voiceHelper?.speak(answer)
+            }, 2500)
+        }
+    }
+
+    private fun onMicTapped() {
+        val ctx = requireContext()
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            startVoiceListening()
+        } else {
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun startVoiceListening() {
+        val helper = voiceHelper ?: VoiceHelper(requireContext(), object : VoiceHelper.Listener {
+            override fun onVoiceResult(text: String) {
+                listeningToast?.cancel()
+                _binding?.etCommand?.setText(text)
+                processCommand(text)
+            }
+
+            override fun onVoiceError(message: String) {
+                listeningToast?.cancel()
+                val msg = when (message) {
+                    "no_speech" -> getString(R.string.voice_no_speech)
+                    "mic_permission" -> getString(R.string.mic_permission_needed)
+                    else -> getString(R.string.voice_failed)
+                }
+                toast(msg)
+            }
+        }).also { voiceHelper = it }
+        if (!helper.isRecognitionAvailable()) {
+            toast(R.string.voice_failed)
+            return
+        }
+        listeningToast = Toast.makeText(requireContext(), R.string.mic_listening, Toast.LENGTH_LONG)
+        listeningToast?.show()
+        helper.startListening()
+    }
+
+    // ---------------- verify count (trust & accuracy) ----------------
+
+    private fun showVerifyDialog() {
+        val threshold = Prefs.confidence(requireContext())
+        val questionable = lastVisible.filter { it.confidence < threshold + 0.15f }
+        if (questionable.isEmpty()) {
+            toast(R.string.no_questionable)
+            return
+        }
+        val ctx = requireContext()
+        val root = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad / 2, pad, pad / 2)
+        }
+        val note = TextView(ctx).apply {
+            text = getString(R.string.accuracy_disclaimer)
+            setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
+            textSize = 13f
+        }
+        root.addView(note)
+        for (t in questionable) {
+            val row = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                val pad = (8 * resources.displayMetrics.density).toInt()
+                setPadding(0, pad, 0, pad)
+            }
+            val label = TextView(ctx).apply {
+                text = "${t.label} — ${(t.confidence * 100).toInt()}%"
+                setTextColor(0xFFFFFFFF.toInt())
+                textSize = 16f
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val remove = com.google.android.material.button.MaterialButton(ctx).apply {
+                text = getString(R.string.verify_remove)
+                setOnClickListener {
+                    adjustCount(t.label, -1)
+                    row.visibility = View.GONE
+                    toast(getString(R.string.verify_removed, t.label))
+                }
+            }
+            row.addView(label)
+            row.addView(remove)
+            root.addView(row)
+        }
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.verify_title)
+            .setView(root)
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
+    // ---------------- badges, coach marks ----------------
+
+    private fun updateOfflineBadge() {
+        val b = _binding ?: return
+        b.offlineBadge.visibility =
+            if (NetworkMonitor.isOnline(requireContext())) View.GONE else View.VISIBLE
+    }
+
+    private fun maybeShowCoachMarks() {
+        if (Prefs.coachDone(requireContext())) return
+        val steps = listOf(
+            getString(R.string.coach_1),
+            getString(R.string.coach_2),
+            getString(R.string.coach_3),
+        )
+        fun showStep(i: Int) {
+            if (!isAdded) return
+            if (i >= steps.size) {
+                Prefs.setCoachDone(requireContext())
+                return
+            }
+            MaterialAlertDialogBuilder(requireContext())
+                .setMessage(steps[i])
+                .setPositiveButton(
+                    if (i == steps.lastIndex) getString(R.string.coach_done)
+                    else getString(R.string.coach_next)
+                ) { _, _ -> showStep(i + 1) }
+                .setCancelable(false)
+                .show()
+        }
+        binding.root.post { showStep(0) }
     }
 
     // ---------------- helpers ----------------

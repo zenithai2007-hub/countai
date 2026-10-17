@@ -35,6 +35,10 @@ class TfliteObjectDetector(
     context: Context,
     modelAsset: String = "detect.tflite",
     labelsAsset: String = "labels.txt",
+    /** When set, the model is loaded from this file instead of assets. */
+    modelFilePath: String? = null,
+    /** When set, labels are loaded from this file instead of assets. */
+    labelsFilePath: String? = null,
     useGpu: Boolean = true,
     useNnapi: Boolean = false,
     numThreads: Int = 4,
@@ -52,9 +56,13 @@ class TfliteObjectDetector(
 
     init {
         labels = try {
-            context.assets.open(labelsAsset).bufferedReader().readLines()
+            if (labelsFilePath != null) {
+                java.io.File(labelsFilePath).bufferedReader().readLines()
+            } else {
+                context.assets.open(labelsAsset).bufferedReader().readLines()
+            }
         } catch (e: Exception) {
-            throw ModelLoadException("Missing asset: $labelsAsset", e)
+            throw ModelLoadException("Missing labels: ${labelsFilePath ?: labelsAsset}", e)
         }
 
         val options = Interpreter.Options().apply {
@@ -86,10 +94,15 @@ class TfliteObjectDetector(
         }
 
         interpreter = try {
-            Interpreter(loadModelFile(context, modelAsset), options)
+            val buffer = if (modelFilePath != null) {
+                loadModelFromFile(modelFilePath)
+            } else {
+                loadModelFile(context, modelAsset)
+            }
+            Interpreter(buffer, options)
         } catch (e: Exception) {
             throw ModelLoadException(
-                "Could not load $modelAsset — run scripts/download_model.sh and rebuild.", e
+                "Could not load ${modelFilePath ?: modelAsset} — run scripts/download_model.sh and rebuild.", e
             )
         }
 
@@ -218,6 +231,12 @@ class TfliteObjectDetector(
         val input = FileInputStream(fd.fileDescriptor)
         val channel = input.channel
         return channel.map(FileChannel.MapMode.READ_ONLY, fd.startOffset, fd.declaredLength)
+    }
+
+    private fun loadModelFromFile(path: String): ByteBuffer {
+        val input = FileInputStream(path)
+        val channel = input.channel
+        return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
     }
 
     companion object {

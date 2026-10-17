@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tabs -->
+    <string name="tab_camera">کیمرہ</string>
+    <string name="tab_tools">ٹولز</string>
+    <string name="tab_history">ہسٹری</string>
+    <string name="tab_settings">سیٹنگز</string>
+    <string name="tools_subtitle">جدید گنتی کے طریقے</string>
+
+    <!-- Camera screen -->
+    <string name="start_camera">کیمرہ شروع کریں</string>
+    <string name="stop_camera">روکیں</string>
+    <string name="pause">توقف</string>
+    <string name="resume">جاری رکھیں</string>
+    <string name="reset">ری سیٹ</string>
+    <string name="capture_save">نتیجہ محفوظ کریں</string>
+    <string name="photo_count">تصویر</string>
+    <string name="share">شیئر</string>
+    <string name="live_label">لائیو</string>
+    <string name="session_total_label">کل تعداد</string>
+    <string name="count_only_label">صرف گنیں:</string>
+    <string name="chip_all">سب</string>
+    <string name="tap_start_camera">\'\'کیمرہ شروع کریں\'\' دبائیں، پھر چیزوں کی طرف کریں۔</string>
+    <string name="point_at_objects">چیزوں کی طرف کریں — گنتی جاری ہے…</string>
+    <string name="status_paused">توقف — کیمرہ آن ہے، گنتی رکی ہوئی۔</string>
+    <string name="status_reset">کاؤنٹر ری سیٹ ہو گئے۔</string>
+    <string name="offline_badge">آف لائن موڈ</string>
+    <string name="ondevice_badge">100% فون پر</string>
+
+    <!-- Command bar + voice -->
+    <string name="command_hint">لکھیں: "صرف بوتلیں گنو"</string>
+    <string name="command_go">چلائیں</string>
+    <string name="mic_listening">سن رہا ہے… بولیں</string>
+    <string name="voice_no_speech">کچھ سنائی نہیں دیا — دوبارہ کوشش کریں۔</string>
+    <string name="mic_permission_needed">آواز کے لیے مائیکروفون کی اجازت چاہیے۔</string>
+
+    <!-- Verify -->
+    <string name="verify_count">گنتی چیک کریں</string>
+    <string name="accuracy_disclaimer">AI گنتی اندازہ ہے، کبھی 100% نہیں۔ اہم گنتی خود چیک کریں۔</string>
+
+    <!-- Coach marks -->
+    <string name="coach_1">👋 CountAI میں خوش آمدید!\n\n1. \'\'کیمرہ شروع کریں\'\' دبائیں اور چیزوں کی طرف کریں — AI خود گنے گا۔</string>
+    <string name="coach_2">2. لکھیں یا بولیں "صرف بوتلیں گنو" — صرف وہی گنا جائے گا۔</string>
+    <string name="coach_3">3. ٹولز میں CountCam، لائن کاؤنٹر، ویڈیو اور مزید۔</string>
+    <string name="coach_next">آگے</string>
+    <string name="coach_done">گنتی شروع کریں</string>
+
+    <!-- CountCam -->
+    <string name="countcam_desc">ایک ٹیپ۔ چیزوں کی طرف کریں۔\nCountAI خود پہچانے، گنے — پھر رزلٹ کارڈ دکھائے۔</string>
+    <string name="smart_count">⚡ سمارٹ گنتی</string>
+    <string name="countcam_done">ہو گیا</string>
+    <string name="count_complete">گنتی مکمل ✅</string>
+    <string name="btn_recount">دوبارہ گنیں</string>
+    <string name="btn_export">ایکسپورٹ</string>
+    <string name="save">محفوظ کریں</string>
+
+    <!-- IN/OUT -->
+    <string name="drag_line_hint">پیلی لائن کو گھسیٹیں، پھر کیمرہ اس طرف کریں۔</string>
+
+    <!-- Video -->
+    <string name="video_title">ویڈیو گنتی</string>
+    <string name="pick_video">ویڈیو چنیں</string>
+    <string name="analyzing_video">ویڈیو کا تجزیہ…</string>
+
+    <!-- Tools hub -->
+    <string name="tool_countcam_desc">ایک ٹیپ سمارٹ گنتی، شیئر کرنے والا رزلٹ کارڈ۔</string>
+    <string name="tool_inout_desc">ورچوئل لائن لگائیں؛ جو گزرے اسے گنیں۔</string>
+    <string name="tool_video_desc">پوری ویڈیو میں ہر چیز گنیں۔</string>
+    <string name="tool_diff_desc">پہلے/بعد کی تصویریں: کیا بدلا، دیکھیں۔</string>
+    <string name="tool_inventory_desc">اپنی مصنوعات کے نام رکھیں، اسٹاک گنیں۔</string>
+    <string name="tool_dashboard_desc">کاروبار کے اعداد، چارٹ اور رپورٹس۔</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">سمارٹ انوینٹری</string>
+    <string name="add_product">+ پروڈکٹ شامل کریں</string>
+
+    <!-- Difference -->
+    <string name="diff_title">تصویر کا موازنہ</string>
+    <string name="pick_before">پہلے والی چنیں</string>
+    <string name="pick_after">بعد والی چنیں</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">کاروباری ڈیش بورڈ</string>
+    <string name="stat_today">آج</string>
+    <string name="stat_week">اس ہفتے</string>
+    <string name="stat_month">اس مہینے</string>
+
+    <!-- Search -->
+    <string name="search_hint">تلاش کریں…</string>
+    <string name="search_go">تلاش</string>
+
+    <!-- Settings -->
+    <string name="lang_title">زبان / Language</string>
+    <string name="perf_title">پرفارمنس موڈ</string>
+    <string name="location_title">ہسٹری کے ساتھ لوکیشن محفوظ کریں</string>
+    <string name="privacy_title">پرائیویسی</string>
+    <string name="premium_title">CountAI پریمیم</string>
+    <string name="cancel">منسوخ</string>
+    <string name="close">بند کریں</string>
+    <string name="delete">حذف کریں</string>
+    <string name="back_desc">واپس</string>
+</resources>

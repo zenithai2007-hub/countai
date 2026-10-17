@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tabs -->
+    <string name="tab_camera">Camera</string>
+    <string name="tab_tools">Tools</string>
+    <string name="tab_history">History</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tools_subtitle">Advanced ginti ke tareeqay</string>
+
+    <!-- Camera screen -->
+    <string name="start_camera">Camera Shuru Karen</string>
+    <string name="stop_camera">Roken</string>
+    <string name="pause">Waqfa</string>
+    <string name="resume">Jari Rakhen</string>
+    <string name="reset">Reset</string>
+    <string name="capture_save">Nateeja Mehfooz Karen</string>
+    <string name="photo_count">Tasveer</string>
+    <string name="share">Share</string>
+    <string name="live_label">LIVE</string>
+    <string name="session_total_label">KUL TADAAD</string>
+    <string name="count_only_label">Sirf ginen:</string>
+    <string name="chip_all">Sab</string>
+    <string name="tap_start_camera">"Camera Shuru Karen" dabayen, phir cheezon ki taraf karen.</string>
+    <string name="point_at_objects">Cheezon ki taraf karen — ginti jari hai…</string>
+    <string name="status_paused">Waqfa — camera on hai, ginti ruki hui.</string>
+    <string name="status_reset">Counter reset ho gaye.</string>
+    <string name="offline_badge">OFFLINE MODE</string>
+    <string name="ondevice_badge">100% phone par</string>
+
+    <!-- Command bar + voice -->
+    <string name="command_hint">Likhen: "sirf botalen gino"</string>
+    <string name="command_go">Chalayen</string>
+    <string name="mic_listening">Sun raha hai… bolen</string>
+    <string name="voice_no_speech">Kuch sunai nahi diya — dobara koshish karen.</string>
+    <string name="mic_permission_needed">Awaz ke liye microphone ki ijazat chahiye.</string>
+
+    <!-- Verify -->
+    <string name="verify_count">Ginti Check Karen</string>
+    <string name="accuracy_disclaimer">AI ginti andaza hai, kabhi 100% nahi. Ahem ginti khud check karen.</string>
+
+    <!-- Coach marks -->
+    <string name="coach_1">👋 CountAI mein khush aamdeed!\n\n1. "Camera Shuru Karen" dabayen aur cheezon ki taraf karen — AI khud ginega.</string>
+    <string name="coach_2">2. Likhen ya bolen "sirf botalen gino" — sirf wohi gina jayega.</string>
+    <string name="coach_3">3. Tools mein CountCam, line counter, video aur mazeed.</string>
+    <string name="coach_next">Agay</string>
+    <string name="coach_done">Ginti shuru karen</string>
+
+    <!-- CountCam -->
+    <string name="countcam_desc">Ek tap. Cheezon ki taraf karen.\nCountAI khud pehchane, gine — phir result card dikhaye.</string>
+    <string name="smart_count">⚡ SMART GINTI</string>
+    <string name="countcam_done">Ho gaya</string>
+    <string name="count_complete">GINTI MUKAMMAL ✅</string>
+    <string name="btn_recount">Dobara ginen</string>
+    <string name="btn_export">Export</string>
+    <string name="save">Mehfooz karen</string>
+
+    <!-- IN/OUT -->
+    <string name="drag_line_hint">Peeli line ko ghaseeten, phir camera us taraf karen.</string>
+
+    <!-- Video -->
+    <string name="video_title">Video Ginti</string>
+    <string name="pick_video">Video chunen</string>
+    <string name="analyzing_video">Video ka tajziya…</string>
+
+    <!-- Tools hub -->
+    <string name="tool_countcam_desc">Ek tap smart ginti, share karne wala result card.</string>
+    <string name="tool_inout_desc">Virtual line lagayen; jo guzre usay ginen.</string>
+    <string name="tool_video_desc">Poori video mein har cheez ginen.</string>
+    <string name="tool_diff_desc">Pehle/baad ki tasveeren: kya badla, dekhen.</string>
+    <string name="tool_inventory_desc">Apni products ke naam rakhen, stock ginen.</string>
+    <string name="tool_dashboard_desc">Karobar ke adaad, chart aur reports.</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">Smart Inventory</string>
+    <string name="add_product">+ Product shamil karen</string>
+
+    <!-- Difference -->
+    <string name="diff_title">Tasveer ka Mawazna</string>
+    <string name="pick_before">Pehle wali chunen</string>
+    <string name="pick_after">Baad wali chunen</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Karobari Dashboard</string>
+    <string name="stat_today">Aaj</string>
+    <string name="stat_week">Is haftay</string>
+    <string name="stat_month">Is mahinay</string>
+
+    <!-- Search -->
+    <string name="search_hint">Talash karen…</string>
+    <string name="search_go">Talash</string>
+
+    <!-- Settings -->
+    <string name="lang_title">Zabaan / Language</string>
+    <string name="perf_title">Performance Mode</string>
+    <string name="location_title">History ke sath location mehfooz karen</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="premium_title">CountAI Premium</string>
+    <string name="cancel">Mansookh</string>
+    <string name="close">Band karen</string>
+    <string name="delete">Hazaf karen</string>
+    <string name="back_desc">Wapas</string>
+</resources>

@@ -17,6 +17,11 @@ data class SessionEntity(
     val imagePath: String? = null,
     /** "live" for camera sessions, "photo" for still-image counting. */
     val mode: String = "live",
+    /**
+     * Coarse "lat,lng" label — only set when the user enabled location in
+     * Settings AND granted the permission. Null = not recorded (default).
+     */
+    val location: String? = null,
 ) {
     fun counts(): Map<String, Int> = try {
         val obj = org.json.JSONObject(countsJson)

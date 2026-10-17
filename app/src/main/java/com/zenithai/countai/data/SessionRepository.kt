@@ -26,7 +26,12 @@ class SessionRepository(private val context: Context) {
     fun sessions(): LiveData<List<SessionEntity>> = dao.getAll()
 
     /** Saves a session; stores the photo in app-internal storage. Returns the new row id. */
-    suspend fun saveSession(counts: Map<String, Int>, photo: Bitmap?, mode: String): Long =
+    suspend fun saveSession(
+        counts: Map<String, Int>,
+        photo: Bitmap?,
+        mode: String,
+        location: String? = null,
+    ): Long =
         withContext(Dispatchers.IO) {
             val imagePath = photo?.let {
                 ImageSaver.saveBitmap(context, it, "session_${System.currentTimeMillis()}.jpg")
@@ -36,6 +41,7 @@ class SessionRepository(private val context: Context) {
                     countsJson = JSONObject(counts as Map<*, *>).toString(),
                     imagePath = imagePath,
                     mode = mode,
+                    location = location,
                 )
             )
         }
