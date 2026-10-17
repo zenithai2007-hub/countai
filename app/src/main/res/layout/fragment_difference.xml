@@ -124,7 +124,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.4f"
+                android:layout_weight="1.4"
                 android:text="@string/diff_col_object"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
@@ -132,7 +132,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1f"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/diff_col_before"
                 android:textColor="@color/text_secondary"
@@ -141,7 +141,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1f"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/diff_col_after"
                 android:textColor="@color/text_secondary"
@@ -150,7 +150,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1f"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/diff_col_change"
                 android:textColor="@color/text_secondary"
