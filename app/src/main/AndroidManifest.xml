@@ -4,6 +4,9 @@
 
     <!-- Camera is required at runtime; requested with a rationale dialog. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Cloud sync (optional; used only when the user signs in + enables backup). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Voice commands (optional; requested only when the mic button is tapped). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Coarse location in history (optional; default OFF in Settings). -->

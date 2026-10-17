@@ -225,7 +225,41 @@
 
     <!-- Settings: privacy -->
     <string name="privacy_title">Privacy</string>
-    <string name="privacy_text">CountAI processes everything on your phone — camera, photos and videos never leave the device. History is stored only in the app. Location is saved only if you enable it above.</string>
+    <string name="privacy_text">Counting happens 100% on your phone — camera, photos and videos are analyzed on-device and never uploaded automatically. If you sign in and turn on Cloud backup, only counting numbers (and small thumbnails, on WiFi) are synced to your private cloud account. Location is saved only if you enable it above.</string>
+
+    <!-- Settings: cloud backup (v3) -->
+    <string name="cloud_title">Cloud backup</string>
+    <string name="cloud_status_off">Cloud: off (not configured in this build)</string>
+    <string name="cloud_status_out">Not signed in — sign in to enable backup.</string>
+    <string name="cloud_status_on">Signed in as %1$s ✓</string>
+    <string name="cloud_backup_title">Back up my history</string>
+    <string name="cloud_backup_hint">Uploads counting numbers only. Photos upload as small thumbnails on WiFi only. Off by default — nothing leaves your phone until you turn this on.</string>
+    <string name="cloud_sync_now">Sync now</string>
+    <string name="cloud_last_sync">Last synced: %1$s</string>
+    <string name="cloud_never">never</string>
+    <string name="cloud_sync_started">Sync started…</string>
+    <string name="cloud_debounced">Just synced — please wait a minute.</string>
+    <string name="cloud_signin_first">Sign in first to use cloud backup.</string>
+
+    <!-- Account (v3) -->
+    <string name="auth_title">Account</string>
+    <string name="auth_desc">Sign in to back up your counting history to the cloud. CountAI works fully without an account — sign-in is optional.</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_signin">Sign in</string>
+    <string name="auth_signup">Create account</string>
+    <string name="auth_magic">Email me a sign-in link</string>
+    <string name="auth_signout">Sign out</string>
+    <string name="auth_signed_in_as">Signed in as %1$s</string>
+    <string name="auth_not_configured">Cloud accounts aren\'t configured in this build — everything stays on your device, which is fine.</string>
+    <string name="auth_check_email">Check your email for the sign-in link.</string>
+    <string name="auth_need_email">Please enter your email first.</string>
+    <string name="auth_need_both">Please enter both email and password.</string>
+    <string name="auth_failed_generic">Something went wrong. Check your connection and try again.</string>
+
+    <!-- Tools hub -->
+    <string name="tool_account">Account</string>
+    <string name="tool_account_desc">Sign in, cloud backup and sync status.</string>
 
     <!-- Settings: custom model -->
     <string name="custom_model_import">Import custom model</string>

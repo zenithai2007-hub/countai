@@ -191,12 +191,80 @@ or Colab. The app only *runs* finished models.
 - GPU delegate is attempted but quantized models often run fastest on
   CPU/NNAPI; the fallback chain handles this automatically.
 
+## Scaling to 50k users (v2.1 — offline-first cloud)
+
+The core decision: **Room is the source of truth; Supabase is a sync target.**
+The app works 100% with zero network — counting, history, reports. Cloud is
+an optional backup, never a dependency. That alone removes 90% of scaling
+risk: no server round-trip can ever crash counting or lose a session.
+
+### One-time setup (the user does this, ~5 minutes)
+
+1. Create a free project at <https://supabase.com/dashboard>.
+2. In the Supabase dashboard SQL editor, run the three files in `supabase/`
+   **in order**: `schema.sql` → `rls.sql` → `indexes.sql`.
+3. Dashboard → Project Settings → API → copy the **Project URL** and the
+   **anon public key** into `local.properties`:
+   `SUPABASE_URL=` and `SUPABASE_ANON_KEY=` (see the template in that file).
+4. Rebuild the app. Settings → Cloud backup now shows your account status.
+
+`local.properties` is gitignored — keys never touch the repo. The anon key is
+public by design (RLS is the real lock); the `service_role` key is NEVER used
+anywhere in the app.
+
+### Why the free tier survives 50k users — the math
+
+Supabase free tier: **500 MB database · 1 GB storage · 2 GB bandwidth/mo ·
+50k monthly active users.** The design respects every cap:
+
+| What syncs | Size | Frequency | 50k-user cost/mo |
+|---|---|---|---|
+| Session metadata (id, counts, timestamps) | ~200 bytes/row | on change, batched ≤100 | 50k × 5 sessions/day × 200 B × 30 d ≈ **1.5 GB ingress** (ingress is not the billed bottleneck) |
+| Session reads (RLS-filtered, paged ×20) | ~200 bytes/row | only when user opens history | small |
+| Thumbnails (~100 KB JPEG) | ~100 KB | **opt-in only, WiFi only**, ≤20/run | 50k × 20% opt-in × 5/day × 100 KB × 30 d ≈ **3 GB storage** — see limits below |
+| Full photos/videos | — | **NEVER auto-upload** | 0 |
+
+Bandwidth that counts is mostly **egress** (downloads). Sync is push-heavy
+(uploads), and there is deliberately **no "download everything" path** — one
+user's data can never flood another user's phone. Pagination (`.range()`,
+20 rows) bounds every read.
+
+### Honest limits
+
+- If **every** user turned on cloud backup and uploaded 5 thumbnails daily,
+  storage would exceed 1 GB. That's exactly why backup **defaults OFF** and
+  needs WiFi + sign-in. With realistic opt-in (~10–20%), usage stays inside
+  the free tier. If you outgrow it, the paid tier — not a rewrite — is the fix.
+- Sync is **eventual** (every 6h, or manual "Sync now" debounced to 1/60s),
+  not realtime. It's a backup, not a live feed.
+- Google sign-in is not wired yet (email/password + magic link are);
+  the `Auth` module supports ID-token sign-in when you're ready.
+- Cross-device thumbnail *viewing* needs signed URLs (next step); today
+  thumbnails are backup-only in the private bucket.
+- If the free tier ever hard-caps (egress), the app keeps working offline —
+  sync workers park and retry; nothing crashes, nothing is lost.
+
+### Code map
+
+- `sync/SupabaseConfig.kt` — fail-soft config (empty keys = offline mode).
+- `sync/SupabaseClientProvider.kt` — ONE shared client (10s connect / 30s
+  read timeouts). One pool, one auth session.
+- `sync/SyncManager.kt` — WorkManager scheduling: 6h periodic, battery-not-low;
+  thumbnails additionally require unmetered WiFi + opt-in.
+- `sync/SyncWorker.kt` — uploads metadata + delete tombstones, batches ≤100,
+  exponential backoff, parks after 5 attempts.
+- `sync/ThumbnailWorker.kt` — ~100 KB thumbnails, ≤20 per run, WiFi only.
+- `repository/AuthRepository.kt` — `SupabaseAuthRepository` (email/password,
+  magic link, sign-out stops sync and keeps local data).
+- `di/ServiceLocator.kt` — resolves NoOp vs Supabase implementations so the
+  UI never branches on config.
+
 ## Roadmap (stubs, not half-features)
 
-`repository/AuthRepository.kt` and `repository/CloudSyncRepository.kt` define
-clean interfaces with no-op implementations — accounts, cloud sync, team
-workspaces, subscriptions and API access plug in there later without touching
-the UI. The CSV exporter is already wired (History → Export CSV).
+Accounts + cloud sync are now REAL (see above). Still stubbed for later:
+team workspaces, subscriptions (Play Billing), and the public API. They plug
+into `repository/` without touching the UI. The CSV exporter is already wired
+(History → Export CSV).
 
 ## License
 

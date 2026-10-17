@@ -23,4 +23,15 @@ interface InventoryDao {
 
     @Query("DELETE FROM inventory WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    // ---- Cloud sync (v3) ----
+
+    @Query("SELECT * FROM inventory WHERE pendingSync = 1 ORDER BY updatedAt ASC LIMIT :limit")
+    suspend fun getPending(limit: Int): List<InventoryEntity>
+
+    @Query("UPDATE inventory SET remoteId = :remoteId, pendingSync = 0 WHERE id = :id")
+    suspend fun markSynced(id: Long, remoteId: String)
+
+    @Query("UPDATE inventory SET pendingSync = 1 WHERE id = :id")
+    suspend fun markPending(id: Long)
 }

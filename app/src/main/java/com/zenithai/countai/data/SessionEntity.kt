@@ -22,6 +22,13 @@ data class SessionEntity(
      * Settings AND granted the permission. Null = not recorded (default).
      */
     val location: String? = null,
+    /**
+     * Cloud sync (v3): the row's UUID in Supabase once uploaded, null until then.
+     * [pendingSync] = true means "needs upload" — set on every local insert.
+     * Room stays the source of truth; Supabase is a sync target only.
+     */
+    val remoteId: String? = null,
+    val pendingSync: Boolean = true,
 ) {
     fun counts(): Map<String, Int> = try {
         val obj = org.json.JSONObject(countsJson)

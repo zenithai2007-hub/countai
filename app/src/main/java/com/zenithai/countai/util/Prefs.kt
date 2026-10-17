@@ -16,6 +16,11 @@ object Prefs {
     const val PERF_SUGGESTED = "perf_suggested"
     const val CUSTOM_MODEL_PATH = "custom_model_path"
     const val CUSTOM_LABELS_PATH = "custom_labels_path"
+    // Cloud sync (v3)
+    const val CLOUD_BACKUP = "cloud_backup"
+    const val LAST_SYNC = "last_sync_at"
+    const val LAST_MANUAL_SYNC = "last_manual_sync_at"
+    const val THUMBS_UPLOADED = "thumbs_uploaded"
 
     const val DEFAULT_CONFIDENCE = 0.5f
     const val DEFAULT_FPS = 10
@@ -85,5 +90,38 @@ object Prefs {
             .putString(CUSTOM_MODEL_PATH, modelPath)
             .putString(CUSTOM_LABELS_PATH, labelsPath)
             .apply()
+    }
+
+    // ---- Cloud sync (v3) ----
+
+    /** "Cloud backup" master toggle. Default OFF — nothing leaves the phone. */
+    fun cloudBackup(context: Context): Boolean =
+        prefs(context).getBoolean(CLOUD_BACKUP, false)
+
+    fun setCloudBackup(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(CLOUD_BACKUP, enabled).apply()
+    }
+
+    /** Last successful metadata sync, 0 = never. */
+    fun lastSync(context: Context): Long =
+        prefs(context).getLong(LAST_SYNC, 0L)
+
+    fun setLastSync(context: Context, at: Long) {
+        prefs(context).edit().putLong(LAST_SYNC, at).apply()
+    }
+
+    fun lastManualSync(context: Context): Long =
+        prefs(context).getLong(LAST_MANUAL_SYNC, 0L)
+
+    fun setLastManualSync(context: Context, at: Long) {
+        prefs(context).edit().putLong(LAST_MANUAL_SYNC, at).apply()
+    }
+
+    /** Remote IDs whose thumbnails are already in cloud storage. */
+    fun thumbsUploaded(context: Context): Set<String> =
+        prefs(context).getStringSet(THUMBS_UPLOADED, emptySet()) ?: emptySet()
+
+    fun setThumbsUploaded(context: Context, ids: Set<String>) {
+        prefs(context).edit().putStringSet(THUMBS_UPLOADED, ids.toSet()).apply()
     }
 }

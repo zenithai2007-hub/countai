@@ -47,6 +47,19 @@ class SessionRepository(private val context: Context) {
         }
 
     suspend fun deleteSession(session: SessionEntity) = withContext(Dispatchers.IO) {
+        // If this row also lives in the cloud, leave a tombstone so the sync
+        // worker deletes it there too (keeps signed-in data consistent).
+        val userId = com.zenithai.countai.di.ServiceLocator
+            .authRepository(context).currentUserId
+        if (session.remoteId != null && userId != null) {
+            CountAiDatabase.getInstance(context).pendingDeleteDao().insert(
+                com.zenithai.countai.data.PendingDelete(
+                    tableName = "sessions",
+                    remoteId = session.remoteId,
+                    userId = userId,
+                )
+            )
+        }
         session.imagePath?.let { File(it).delete() }
         dao.deleteById(session.id)
     }

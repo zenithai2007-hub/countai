@@ -15,4 +15,7 @@ data class InventoryEntity(
     val label: String,
     val lastCount: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
+    /** Cloud sync (v3): Supabase row UUID once uploaded; [pendingSync] = needs upload. */
+    val remoteId: String? = null,
+    val pendingSync: Boolean = true,
 )

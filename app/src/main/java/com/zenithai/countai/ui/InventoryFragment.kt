@@ -48,7 +48,22 @@ class InventoryFragment : Fragment() {
         val adapter = InventoryAdapter(
             onCount = { item -> promptCount(item) },
             onDelete = { item ->
-                lifecycleScope.launch { dao.deleteById(item.id) }
+                lifecycleScope.launch {
+                    // Tombstone for the cloud if this product was synced.
+                    val userId = com.zenithai.countai.di.ServiceLocator
+                        .authRepository(requireContext()).currentUserId
+                    val db = CountAiDatabase.getInstance(requireContext())
+                    if (item.remoteId != null && userId != null) {
+                        db.pendingDeleteDao().insert(
+                            com.zenithai.countai.data.PendingDelete(
+                                tableName = "inventory_items",
+                                remoteId = item.remoteId,
+                                userId = userId,
+                            )
+                        )
+                    }
+                    db.inventoryDao().deleteById(item.id)
+                }
             },
         )
         binding.inventoryList.layoutManager = LinearLayoutManager(requireContext())

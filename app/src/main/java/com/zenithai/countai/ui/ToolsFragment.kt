@@ -48,6 +48,9 @@ class ToolsFragment : Fragment() {
             Tool(R.string.tool_dashboard, R.string.tool_dashboard_desc, com.zenithai.countai.util.PremiumManager.Feature.BUSINESS_DASHBOARD) {
                 (activity as? MainActivity)?.showScreen(MainActivity.SCREEN_DASHBOARD)
             },
+            Tool(R.string.tool_account, R.string.tool_account_desc, null) {
+                (activity as? MainActivity)?.showScreen(MainActivity.SCREEN_AUTH)
+            },
         )
         for (t in tools) binding.toolsList.addView(makeCard(t))
     }

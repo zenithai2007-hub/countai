@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -12,8 +13,20 @@ android {
         applicationId = "com.zenithai.countai"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "2.0.0"
+        versionCode = 3
+        versionName = "2.1.0"
+
+        // Supabase credentials come from local.properties (never committed).
+        // Empty = cloud features stay off; the app runs fully offline.
+        val localProps = java.util.Properties()
+        val localPropsFile = rootProject.file("local.properties")
+        if (localPropsFile.exists()) {
+            localPropsFile.inputStream().use { localProps.load(it) }
+        }
+        val supabaseUrl: String = localProps.getProperty("SUPABASE_URL", "")
+        val supabaseAnonKey: String = localProps.getProperty("SUPABASE_ANON_KEY", "")
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {
@@ -71,4 +84,18 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
+
+    // WorkManager — background cloud sync (battery-friendly, constrained)
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // Supabase (auth + postgrest + storage) — sync target only.
+    // Room stays the source of truth; the app works fully offline.
+    val supabaseVersion = "3.8.0"
+    implementation(platform("io.github.jan-tennert.supabase:bom:$supabaseVersion"))
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
+    // Ktor engine matching supabase-kt 3.8.0 (Ktor 3.x line)
+    implementation("io.ktor:ktor-client-android:3.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }

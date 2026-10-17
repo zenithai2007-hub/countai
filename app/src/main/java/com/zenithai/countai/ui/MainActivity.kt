@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val inventoryFragment = InventoryFragment()
     private val diffFragment = DifferenceFragment()
     private val dashboardFragment = DashboardFragment()
+    private val authFragment = AuthFragment()
     private var active: Fragment = cameraFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             .add(R.id.nav_host, inventoryFragment, SCREEN_INVENTORY).hide(inventoryFragment)
             .add(R.id.nav_host, diffFragment, SCREEN_DIFF).hide(diffFragment)
             .add(R.id.nav_host, dashboardFragment, SCREEN_DASHBOARD).hide(dashboardFragment)
+            .add(R.id.nav_host, authFragment, SCREEN_AUTH).hide(authFragment)
             .add(R.id.nav_host, cameraFragment, SCREEN_CAMERA)
             .commit()
 
@@ -79,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         // Keep the bottom nav in sync when arriving from the Tools hub.
         val itemId = when (target) {
             toolsFragment, countCamFragment, inOutFragment, videoFragment,
-            inventoryFragment, diffFragment, dashboardFragment -> R.id.nav_tools
+            inventoryFragment, diffFragment, dashboardFragment, authFragment -> R.id.nav_tools
             historyFragment -> R.id.nav_history
             settingsFragment -> R.id.nav_settings
             else -> R.id.nav_camera
@@ -100,5 +102,6 @@ class MainActivity : AppCompatActivity() {
         const val SCREEN_INVENTORY = "inventory"
         const val SCREEN_DIFF = "diff"
         const val SCREEN_DASHBOARD = "dashboard"
+        const val SCREEN_AUTH = "auth"
     }
 }

@@ -15,9 +15,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.zenithai.countai.R
 import com.zenithai.countai.databinding.FragmentSettingsBinding
 import com.zenithai.countai.detection.CustomModelImporter
+import com.zenithai.countai.di.ServiceLocator
+import com.zenithai.countai.sync.SupabaseConfig
+import com.zenithai.countai.sync.SyncManager
 import com.zenithai.countai.util.LanguageManager
 import com.zenithai.countai.util.PerformanceManager
 import com.zenithai.countai.util.Prefs
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Settings: confidence, GPU/NNAPI, language (EN/UR/Roman), performance
@@ -124,6 +130,12 @@ class SettingsFragment : Fragment() {
         }
         updateCustomModelStatus()
         maybeSuggestBatterySaver()
+        setupCloudSection()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateCloudSection()
     }
 
     override fun onDestroyView() {
@@ -221,6 +233,61 @@ class SettingsFragment : Fragment() {
     private fun updateConfidenceLabel() {
         binding.tvConfidenceValue.text =
             String.format("%.2f", Prefs.confidence(requireContext()))
+    }
+
+    // ---- Cloud backup (v3) ----
+
+    private fun setupCloudSection() {
+        binding.switchCloudBackup.isChecked = Prefs.cloudBackup(requireContext())
+        binding.switchCloudBackup.setOnCheckedChangeListener { _, checked ->
+            val ctx = requireContext()
+            if (checked && !ServiceLocator.authRepository(ctx).isSignedIn) {
+                // Backup needs an account: send them to the Account screen.
+                binding.switchCloudBackup.isChecked = false
+                (activity as? MainActivity)?.showScreen(MainActivity.SCREEN_AUTH)
+                toast(R.string.cloud_signin_first)
+                return@setOnCheckedChangeListener
+            }
+            Prefs.setCloudBackup(ctx, checked)
+            if (checked) SyncManager.schedulePeriodic(ctx)
+            updateCloudSection()
+        }
+        binding.btnSyncNow.setOnClickListener {
+            val ctx = requireContext()
+            if (!ServiceLocator.authRepository(ctx).isSignedIn) {
+                toast(R.string.cloud_signin_first)
+                return@setOnClickListener
+            }
+            val started = SyncManager.syncNow(ctx)
+            toast(if (started) R.string.cloud_sync_started else R.string.cloud_debounced)
+            updateCloudSection()
+        }
+        binding.btnAccount.setOnClickListener {
+            (activity as? MainActivity)?.showScreen(MainActivity.SCREEN_AUTH)
+        }
+        updateCloudSection()
+    }
+
+    private fun updateCloudSection() {
+        val ctx = requireContext()
+        val auth = ServiceLocator.authRepository(ctx)
+        binding.tvCloudStatus.text = when {
+            !SupabaseConfig.isConfigured -> getString(R.string.cloud_status_off)
+            !auth.isSignedIn -> getString(R.string.cloud_status_out)
+            else -> getString(R.string.cloud_status_on, auth.currentEmail ?: "")
+        }
+        val last = Prefs.lastSync(ctx)
+        binding.tvLastSync.text = if (last == 0L) {
+            getString(R.string.cloud_last_sync, getString(R.string.cloud_never))
+        } else {
+            val date = SimpleDateFormat("d MMM, h:mm a", Locale.getDefault()).format(Date(last))
+            getString(R.string.cloud_last_sync, date)
+        }
+        // Keep the toggle honest: it only means something when signed in.
+        if (!auth.isSignedIn && binding.switchCloudBackup.isChecked) {
+            binding.switchCloudBackup.isChecked = false
+            Prefs.setCloudBackup(ctx, false)
+        }
     }
 
     private fun toast(resId: Int) {
