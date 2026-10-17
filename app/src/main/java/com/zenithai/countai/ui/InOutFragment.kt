@@ -167,6 +167,10 @@ class InOutFragment : Fragment() {
         context?.let { Toast.makeText(it, resId, Toast.LENGTH_SHORT).show() }
     }
 
+    private fun toast(text: String) {
+        context?.let { Toast.makeText(it, text, Toast.LENGTH_SHORT).show() }
+    }
+
     companion object {
         private const val TAG = "InOutFragment"
     }
