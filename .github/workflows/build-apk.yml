@@ -25,6 +25,9 @@ jobs:
             bash scripts/download_model.sh
           fi
       - run: gradle assembleDebug --no-daemon --stacktrace
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       - uses: actions/upload-artifact@v4
         with:
           name: countai-debug-apk
