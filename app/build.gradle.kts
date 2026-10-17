@@ -15,8 +15,8 @@ android {
         applicationId = "com.zenithai.countai"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "2.1.0"
+        versionCode = 4
+        versionName = "2.2.0"
 
         // Supabase credentials: local.properties first (never committed),
         // then environment variables (used by GitHub Actions secrets).
@@ -34,13 +34,46 @@ android {
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
+    // Persistent release keystore (PKCS12). In CI the keystore comes from the
+    // RELEASE_KEYSTORE_B64 secret; locally the block stays empty and debug
+    // builds fall back to the default debug key. The .p12 + passwords are
+    // backed up in ~/workspace/countai-keystore-backup (never committed).
+    signingConfigs {
+        create("release") {
+            val ksB64 = System.getenv("RELEASE_KEYSTORE_B64")
+            if (!ksB64.isNullOrEmpty()) {
+                val ksFile = project.file("${project.buildDir}/countai-release.p12")
+                if (!ksFile.exists()) {
+                    ksFile.parentFile.mkdirs()
+                    ksFile.writeBytes(java.util.Base64.getDecoder().decode(ksB64))
+                }
+                storeFile = ksFile
+                storeType = "PKCS12"
+                storePassword = System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // In CI, sign even the debug APK with the persistent release key
+            // so every published build carries ONE signature and installs
+            // cleanly over the previous one (no more "App not installed").
+            if (!System.getenv("RELEASE_KEYSTORE_B64").isNullOrEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (!System.getenv("RELEASE_KEYSTORE_B64").isNullOrEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
