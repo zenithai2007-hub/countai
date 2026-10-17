@@ -100,4 +100,13 @@ dependencies {
     // Ktor engine matching supabase-kt 3.8.0 (Ktor 3.x line)
     implementation("io.ktor:ktor-client-android:3.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // supabase-kt's auth pulls androidx.browser:1.10.0 transitively, which
+    // demands compileSdk 36. We compile against 34, so pin the last 34-safe
+    // release instead. (Only used for OAuth browser tabs; harmless.)
+    constraints {
+        implementation("androidx.browser:browser:1.8.0") {
+            because("browser:1.10.0 requires compileSdk 36; CountAI targets 34")
+        }
+    }
 }
