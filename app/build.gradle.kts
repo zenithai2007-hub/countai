@@ -5,6 +5,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+import java.util.Properties
+
 android {
     namespace = "com.zenithai.countai"
     compileSdk = 34
@@ -18,7 +20,7 @@ android {
 
         // Supabase credentials come from local.properties (never committed).
         // Empty = cloud features stay off; the app runs fully offline.
-        val localProps = java.util.Properties()
+        val localProps = Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) {
             localPropsFile.inputStream().use { localProps.load(it) }
