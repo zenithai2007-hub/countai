@@ -18,7 +18,8 @@ android {
         versionCode = 3
         versionName = "2.1.0"
 
-        // Supabase credentials come from local.properties (never committed).
+        // Supabase credentials: local.properties first (never committed),
+        // then environment variables (used by GitHub Actions secrets).
         // Empty = cloud features stay off; the app runs fully offline.
         val localProps = Properties()
         val localPropsFile = rootProject.file("local.properties")
@@ -26,7 +27,9 @@ android {
             localPropsFile.inputStream().use { localProps.load(it) }
         }
         val supabaseUrl: String = localProps.getProperty("SUPABASE_URL", "")
+            .ifEmpty { System.getenv("SUPABASE_URL") ?: "" }
         val supabaseAnonKey: String = localProps.getProperty("SUPABASE_ANON_KEY", "")
+            .ifEmpty { System.getenv("SUPABASE_ANON_KEY") ?: "" }
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
