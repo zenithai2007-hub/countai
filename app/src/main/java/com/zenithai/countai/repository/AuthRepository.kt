@@ -91,6 +91,7 @@ class SupabaseAuthRepository(private val context: Context) : AuthRepository {
             // Rows created while signed out now belong to this user.
             SyncManager.schedulePeriodic(context)
             SyncManager.syncNow(context)
+            Unit
         }.mapFailure()
 
     override suspend fun signUp(email: String, password: String): Result<Unit> =
