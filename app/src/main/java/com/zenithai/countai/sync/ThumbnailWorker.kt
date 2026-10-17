@@ -7,9 +7,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.zenithai.countai.data.CountAiDatabase
 import com.zenithai.countai.util.Prefs
-import io.github.jan_tennert.supabase.postgrest.from
-import io.github.jan_tennert.supabase.postgrest.query.filter.eq
-import io.github.jan_tennert.supabase.storage.storage
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.filter.eq
+import io.github.jan.supabase.storage.storage
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -55,9 +55,11 @@ class ThumbnailWorker(
                 val bytes = makeThumbnail(s.imagePath!!) ?: continue
                 val path = "$userId/${s.remoteId}.jpg"
                 try {
-                    client.storage.from("thumbnails").upload(path, bytes, upsert = true)
+                    client.storage.from("thumbnails").upload(path, bytes) {
+                        upsert = true
+                    }
                     client.from("sessions").update(
-                        mapOf("thumbnail_url" to path)
+                        { set("thumbnail_url", path) }
                     ) {
                         filter { eq("id", s.remoteId!!) }
                     }

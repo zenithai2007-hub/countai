@@ -3,9 +3,9 @@ package com.zenithai.countai.repository
 import android.content.Context
 import com.zenithai.countai.sync.SupabaseClientProvider
 import com.zenithai.countai.sync.SyncManager
-import io.github.jan_tennert.supabase.auth.auth
-import io.github.jan_tennert.supabase.auth.providers.builtin.Email
-import io.github.jan_tennert.supabase.auth.providers.builtin.OTP
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.OTP
 
 /**
  * Accounts via Supabase Auth (free tier: 50k monthly active users).

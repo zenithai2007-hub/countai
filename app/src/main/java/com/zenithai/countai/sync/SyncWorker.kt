@@ -5,8 +5,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.zenithai.countai.data.CountAiDatabase
 import com.zenithai.countai.util.Prefs
-import io.github.jan_tennert.supabase.postgrest.from
-import io.github.jan_tennert.supabase.postgrest.query.filter.eq
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.filter.eq
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -63,7 +63,7 @@ class SyncWorker(
 
     private suspend fun processTombstones(
         db: CountAiDatabase,
-        client: io.github.jan_tennert.supabase.SupabaseClient,
+        client: io.github.jan.supabase.SupabaseClient,
     ) {
         val dao = db.pendingDeleteDao()
         val batch = dao.getBatch(50)
@@ -82,7 +82,7 @@ class SyncWorker(
 
     private suspend fun syncSessions(
         db: CountAiDatabase,
-        client: io.github.jan_tennert.supabase.SupabaseClient,
+        client: io.github.jan.supabase.SupabaseClient,
         userId: String,
     ) {
         val dao = db.historyDao()
@@ -107,7 +107,7 @@ class SyncWorker(
 
     private suspend fun syncInventory(
         db: CountAiDatabase,
-        client: io.github.jan_tennert.supabase.SupabaseClient,
+        client: io.github.jan.supabase.SupabaseClient,
         userId: String,
     ) {
         val dao = db.inventoryDao()

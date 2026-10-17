@@ -259,6 +259,13 @@ user's data can never flood another user's phone. Pagination (`.range()`,
 - `di/ServiceLocator.kt` — resolves NoOp vs Supabase implementations so the
   UI never branches on config.
 
+**Dependency pin (important):** supabase-kt is pinned to **3.0.0** and
+ktor-client-android to **3.0.3** — the newest releases built with Kotlin 2.0
+metadata, which this project's Kotlin 2.0.20 compiler can read. Newer
+releases (supabase-kt 3.1+, metadata 2.1–2.4) break compilation and Room's
+kapt processor. Don't bump them without also upgrading the project's Kotlin
+version (and re-verifying Room + AGP compatibility).
+
 ## Roadmap (stubs, not half-features)
 
 Accounts + cloud sync are now REAL (see above). Still stubbed for later:

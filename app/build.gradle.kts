@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -81,25 +81,28 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.16.1")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.16.1")
 
-    // Room — counting history (KSP: kapt can't read Kotlin 2.2 metadata
-    // from newer transitive deps like kotlinx-coroutines 1.11)
+    // Room — counting history (kapt; KSP unneeded)
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
 
     // WorkManager — background cloud sync (battery-friendly, constrained)
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // Supabase (auth + postgrest + storage) — sync target only.
     // Room stays the source of truth; the app works fully offline.
-    val supabaseVersion = "3.8.0"
+    // PINNED: supabase-kt 3.0.0 + ktor 3.0.3 are the newest releases built
+    // with Kotlin 2.0 metadata, which this project's Kotlin 2.0.20 compiler
+    // can read. Newer releases (supabase-kt 3.1+, metadata 2.1/2.2/2.4)
+    // break compilation AND break Room's kapt processor. Do not bump
+    // without also upgrading the project's Kotlin version.
+    val supabaseVersion = "3.0.0"
     implementation(platform("io.github.jan-tennert.supabase:bom:$supabaseVersion"))
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:storage-kt")
-    // Ktor engine matching supabase-kt 3.8.0 (Ktor 3.x line)
-    implementation("io.ktor:ktor-client-android:3.5.1")
+    implementation("io.ktor:ktor-client-android:3.0.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
 
