@@ -83,6 +83,7 @@ class VoiceHelper(
                 Log.w(TAG, "startListening failed", e)
                 listener.onVoiceError("recognition_failed")
             }
+            } // close apply { on the SpeechRecognizer
         } catch (e: Throwable) {
             // createSpeechRecognizer itself can throw on devices with no
             // recognition service — never crash, report it instead.
