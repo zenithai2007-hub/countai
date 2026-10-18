@@ -220,7 +220,10 @@ class CameraFragment : Fragment() {
             } catch (e: ModelLoadException) {
                 Log.e(TAG, "model missing", e)
                 null
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
+                // Last line of defense: ANY failure here (including Errors like
+                // NoClassDefFoundError) must degrade to "no detector", never
+                // crash the app. The UI shows "model missing" instead.
                 Log.e(TAG, "detector init failed", e)
                 null
             }

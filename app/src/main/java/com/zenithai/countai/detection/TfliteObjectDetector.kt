@@ -76,7 +76,10 @@ class TfliteObjectDetector(
                     } else {
                         Log.i(TAG, "GPU delegate not supported on this device, using CPU/NNAPI")
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
+                    // Throwable (not just Exception): a missing GPU class throws
+                    // NoClassDefFoundError, which must ALSO fall back to CPU —
+                    // otherwise the app dies on launch. GPU is optional.
                     Log.w(TAG, "GPU delegate failed, falling back", e)
                     gpuDelegate = null
                 }
@@ -86,7 +89,7 @@ class TfliteObjectDetector(
                     nnApiDelegate = NnApiDelegate()
                     addDelegate(nnApiDelegate)
                     Log.i(TAG, "NNAPI delegate enabled")
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Log.w(TAG, "NNAPI delegate failed, falling back to CPU", e)
                     nnApiDelegate = null
                 }

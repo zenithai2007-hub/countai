@@ -16,8 +16,8 @@ android {
         applicationId = "com.zenithai.countai"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "2.2.2"
+        versionCode = 7
+        versionName = "2.2.3"
 
         // Supabase credentials: local.properties first (never committed),
         // then environment variables (used by GitHub Actions secrets).
