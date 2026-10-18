@@ -47,12 +47,11 @@ class CrashReportActivity : Activity() {
             textSize = 12f
             isTextSelectable = true
         }
-        val scroll = ScrollView(this).apply {
-            addView(body)
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
-            )
-        }
+        val scroll = ScrollView(this)
+        scroll.addView(body)
+        scroll.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        )
 
         val copyBtn = Button(this).apply {
             text = "Copy error"
