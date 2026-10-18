@@ -45,7 +45,7 @@ class CrashReportActivity : Activity() {
             text = trace.take(6000)
             setTextColor(Color.parseColor("#FF9D9D"))
             textSize = 12f
-            isTextSelectable = true
+            setTextIsSelectable(true)
         }
         val scroll = ScrollView(this)
         scroll.addView(body)
