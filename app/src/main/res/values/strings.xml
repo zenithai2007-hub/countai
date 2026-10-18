@@ -280,4 +280,10 @@
     <!-- Settings: premium -->
     <string name="premium_title">CountAI Premium</string>
     <string name="premium_text">Basic counting is free forever. Premium adds: video counting, photo compare, advanced reports, business dashboard and cloud history. Everything is unlocked while CountAI is in beta.</string>
+
+    <!-- Pro camera screen -->
+    <string name="sheet_empty">Point at objects to start counting</string>
+    <string name="sheet_summary">%1$d objects • %2$d total</string>
+    <string name="sheet_toggle_desc">Expand or collapse details</string>
+    <string name="profile_desc">Account — sign in or sign up</string>
 </resources>

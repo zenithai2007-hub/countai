@@ -79,6 +79,8 @@ class CameraFragment : Fragment() {
     /** Back camera by default; the switch button toggles to front. */
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var paused = false
+    /** Bottom sheet starts collapsed so the camera fills the screen. */
+    private var sheetExpanded = false
     private var lastAnalyzeMs = 0L
 
     // Geometry of the last analyzed frame (for overlay mapping).
@@ -158,6 +160,12 @@ class CameraFragment : Fragment() {
         binding.btnShare.setOnClickListener { shareCurrentResult() }
         binding.btnVerify.setOnClickListener { showVerifyDialog() }
         binding.btnMic.setOnClickListener { onMicTapped() }
+        // Pro UI: floating shutter FAB + collapsible sheet + profile entry.
+        binding.fabShutter.setOnClickListener { toggleCamera() }
+        binding.sheetHeader.setOnClickListener { toggleSheet() }
+        binding.btnProfile.setOnClickListener {
+            (activity as? MainActivity)?.showScreen(MainActivity.SCREEN_AUTH)
+        }
         binding.btnSendCommand.setOnClickListener {
             processCommand(binding.etCommand.text.toString())
         }
@@ -178,6 +186,7 @@ class CameraFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         updateOfflineBadge()
+        refreshProfileButton()
         // (Re)build the detector on a background thread so Settings changes
         // (GPU/NNAPI toggles) take effect when coming back.
         lifecycleScope.launch(Dispatchers.Default) {
@@ -383,6 +392,7 @@ class CameraFragment : Fragment() {
             b.overlay.setDetections(visible, frameW, frameH, cropX, cropY, cropSize)
             b.tvLiveCount.text = live.values.sum().toString()
             b.tvTotalCount.text = session.values.sum().toString()
+            updateSheetSummary()
             renderCountRows(live, session)
             b.warningBadge.visibility =
                 if (visible.isNotEmpty() && avgConf < LOW_CONF_THRESHOLD) View.VISIBLE else View.GONE
@@ -447,6 +457,7 @@ class CameraFragment : Fragment() {
         val b = _binding ?: return
         val session = effectiveSessionCounts()
         b.tvTotalCount.text = session.values.sum().toString()
+        updateSheetSummary()
         renderCountRows(tracker.liveCounts(), session)
     }
 
@@ -478,6 +489,7 @@ class CameraFragment : Fragment() {
         b.overlay.clear()
         b.tvLiveCount.text = "0"
         b.tvTotalCount.text = "0"
+        updateSheetSummary()
         b.countRows.removeAllViews()
         b.warningBadge.visibility = View.GONE
         updateStatus(getString(R.string.status_reset))
@@ -873,10 +885,62 @@ class CameraFragment : Fragment() {
         val b = _binding ?: return
         b.btnStartCamera.text =
             getString(if (cameraRunning) R.string.stop_camera else R.string.start_camera)
+        // Floating shutter mirrors the same state (play vs stop icon).
+        b.fabShutter.setImageResource(
+            if (cameraRunning) R.drawable.ic_stop else android.R.drawable.ic_media_play
+        )
+        b.fabShutter.contentDescription =
+            getString(if (cameraRunning) R.string.stop_camera else R.string.start_camera)
         b.btnPause.text = getString(if (paused) R.string.resume else R.string.pause)
         b.btnPause.isEnabled = cameraRunning
         // RESET only makes sense once there's something to clear.
         b.btnReset.isEnabled = cameraRunning || effectiveSessionCounts().values.sum() > 0
+    }
+
+    // ---------------- pro bottom sheet ----------------
+
+    /** Expand/collapse the details sheet with a smooth built-in transition. */
+    private fun toggleSheet() {
+        val b = _binding ?: return
+        sheetExpanded = !sheetExpanded
+        androidx.transition.TransitionManager.beginDelayedTransition(
+            b.sheetRoot, androidx.transition.AutoTransition()
+        )
+        b.sheetContent.visibility = if (sheetExpanded) View.VISIBLE else View.GONE
+        // The expanded sheet has its own START button; the floating shutter
+        // only shows when collapsed so it never covers sheet content.
+        b.fabShutter.visibility = if (sheetExpanded) View.GONE else View.VISIBLE
+        b.ivSheetChevron.setImageResource(
+            if (sheetExpanded) android.R.drawable.arrow_down_float
+            else android.R.drawable.arrow_up_float
+        )
+    }
+
+    /** Slim header always shows live object kinds + session total. */
+    private fun updateSheetSummary() {
+        val b = _binding ?: return
+        val session = effectiveSessionCounts()
+        val kinds = session.size
+        val total = session.values.sum()
+        b.tvSheetSummary.text =
+            if (total == 0) getString(R.string.sheet_empty)
+            else getString(R.string.sheet_summary, kinds, total)
+    }
+
+    /**
+     * Login entry in the top bar: shows the user's email initial when signed
+     * in, a person glyph otherwise. Tapping opens the account screen.
+     */
+    private fun refreshProfileButton() {
+        val b = _binding ?: return
+        val ctx = context ?: return
+        val email = try {
+            com.zenithai.countai.di.ServiceLocator.authRepository(ctx).currentEmail
+        } catch (e: Exception) {
+            null
+        }
+        b.btnProfile.text =
+            if (email.isNullOrBlank()) "👤" else email.trim().first().uppercase()
     }
 
     private fun updateStatus(text: String) {
