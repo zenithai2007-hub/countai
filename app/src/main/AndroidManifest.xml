@@ -38,6 +38,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Crash reporter: plain screen, no dependencies, shows the stack
+             trace when the app dies so the user can share what broke. -->
+        <activity
+            android:name=".ui.CrashReportActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+
         <!-- For sharing exported CSV files -->
         <provider
             android:name="androidx.core.content.FileProvider"
