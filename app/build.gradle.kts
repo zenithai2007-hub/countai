@@ -6,6 +6,7 @@ plugins {
 }
 
 import java.util.Properties
+import java.util.Base64
 
 android {
     namespace = "com.zenithai.countai"
@@ -45,7 +46,7 @@ android {
                 val ksFile = project.file("${project.buildDir}/countai-release.p12")
                 if (!ksFile.exists()) {
                     ksFile.parentFile.mkdirs()
-                    ksFile.writeBytes(java.util.Base64.getDecoder().decode(ksB64))
+                    ksFile.writeBytes(Base64.getDecoder().decode(ksB64))
                 }
                 storeFile = ksFile
                 storeType = "PKCS12"
