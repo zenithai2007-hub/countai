@@ -27,24 +27,24 @@ object ResultCard {
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
-        c.drawColor(0xFF121212.toInt())
+        c.drawColor(0xFFFFFFFF.toInt())
 
-        val accent = Paint().apply { color = 0xFF00E676.toInt() }
+        val accent = Paint().apply { color = 0xFFE6A800.toInt() }
         c.drawRect(0f, 0f, w.toFloat(), 8 * density, accent)
 
         val titlePaint = Paint().apply {
-            color = 0xFFFFFFFF.toInt(); textSize = 22 * density
+            color = 0xFF212121.toInt(); textSize = 22 * density
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD); isAntiAlias = true
         }
         val rowPaint = Paint().apply {
-            color = 0xFFE0E0E0.toInt(); textSize = 17 * density; isAntiAlias = true
+            color = 0xFF424242.toInt(); textSize = 17 * density; isAntiAlias = true
         }
         val countPaint = Paint().apply {
-            color = 0xFF00E676.toInt(); textSize = 20 * density
+            color = 0xFFE6A800.toInt(); textSize = 20 * density
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD); isAntiAlias = true
         }
         val smallPaint = Paint().apply {
-            color = 0xFF9E9E9E.toInt(); textSize = 12 * density; isAntiAlias = true
+            color = 0xFF757575.toInt(); textSize = 12 * density; isAntiAlias = true
         }
 
         var y = 52 * density

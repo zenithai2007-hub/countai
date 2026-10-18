@@ -9,8 +9,8 @@ import com.zenithai.countai.databinding.ActivityMainBinding
 import com.zenithai.countai.util.LanguageManager
 
 /**
- * Single-activity host. The camera UI is always dark (forced night mode)
- * for contrast against the preview.
+ * Single-activity host. Light theme (white + yellow) forced for a bright,
+ * friendly look.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -31,7 +31,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         LanguageManager.applyFromPrefs(this)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        // Light theme: white backgrounds, yellow brand accents.
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

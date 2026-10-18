@@ -23,6 +23,8 @@ class DetectionOverlayView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     private var objects: List<TrackedObject> = emptyList()
+    /** Live per-class counts for the current frame ("bottle ×3"). */
+    private var classCounts: Map<String, Int> = emptyMap()
     private var frameW = 1
     private var frameH = 1
     private var cropX = 0
@@ -56,6 +58,7 @@ class DetectionOverlayView @JvmOverloads constructor(
         cropSize: Int,
     ) {
         this.objects = objects
+        this.classCounts = objects.groupingBy { it.label }.eachCount()
         this.frameW = frameWidth.coerceAtLeast(1)
         this.frameH = frameHeight.coerceAtLeast(1)
         this.cropX = cropX
@@ -66,6 +69,7 @@ class DetectionOverlayView @JvmOverloads constructor(
 
     fun clear() {
         objects = emptyList()
+        classCounts = emptyMap()
         invalidate()
     }
 
@@ -88,7 +92,7 @@ class DetectionOverlayView @JvmOverloads constructor(
             boxPaint.color = color
             canvas.drawRoundRect(l, t, r, b, 12f, 12f, boxPaint)
 
-            val text = "${o.label} ${(o.confidence * 100).toInt()}%"
+            val text = "${o.label} ×${classCounts[o.label] ?: 1}"
             val tw = textPaint.measureText(text)
             labelBgPaint.color = color
             val bgTop = (t - 54f).coerceAtLeast(0f)

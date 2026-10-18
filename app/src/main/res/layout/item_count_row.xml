@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:textSize="16sp" />
 
     <TextView
@@ -34,7 +34,7 @@
         android:minWidth="44dp"
         android:gravity="end"
         android:text="0"
-        android:textColor="@color/accent"
+        android:textColor="@color/accent_text"
         android:textSize="20sp"
         android:textStyle="bold" />
 

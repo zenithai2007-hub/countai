@@ -40,7 +40,8 @@ class VoiceHelper(
             return
         }
         stopListening()
-        recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+        try {
+            recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
             setRecognitionListener(object : RecognitionListener {
                 override fun onResults(results: Bundle) {
                     val list = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -82,6 +83,11 @@ class VoiceHelper(
                 Log.w(TAG, "startListening failed", e)
                 listener.onVoiceError("recognition_failed")
             }
+        } catch (e: Throwable) {
+            // createSpeechRecognizer itself can throw on devices with no
+            // recognition service — never crash, report it instead.
+            Log.w(TAG, "createSpeechRecognizer failed", e)
+            listener.onVoiceError("speech_unavailable")
         }
     }
 

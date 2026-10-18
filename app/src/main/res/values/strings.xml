@@ -20,7 +20,7 @@
     <string name="session_total_label">SESSION TOTAL</string>
     <string name="count_only_label">Count only:</string>
     <string name="chip_all">All</string>
-    <string name="tap_start_camera">Tap “Start Camera”, then point at objects.</string>
+    <string name="tap_start_camera">Tap START, point at objects — AI counts them live. Try the mic: say \"count only bottles\".</string>
     <string name="point_at_objects">Point at objects — counting live…</string>
     <string name="status_paused">Paused — camera still on, counting frozen.</string>
     <string name="status_reset">Counters reset.</string>
@@ -93,8 +93,14 @@
     <string name="voice_no_speech">Did not hear anything — try again.</string>
     <string name="voice_failed">Voice recognition is not available on this phone.</string>
     <string name="mic_listening">Listening… speak now</string>
+    <string name="mic_listening_status">🎤 Listening… speak now</string>
+    <string name="voice_unavailable">Voice typing isn\'t available on this phone — type your command instead.</string>
     <string name="mic_desc">Voice command</string>
     <string name="mic_permission_needed">Microphone permission is needed for voice commands.</string>
+    <string name="switch_camera_desc">Switch front/back camera</string>
+    <string name="camera_switched">Camera switched</string>
+    <string name="reset_confirm_title">Reset counters?</string>
+    <string name="reset_confirm_message">This clears everything counted in this session. Continue?</string>
 
     <!-- Verify count / trust -->
     <string name="verify_count">Verify Count</string>

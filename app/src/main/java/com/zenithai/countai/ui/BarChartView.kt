@@ -20,13 +20,13 @@ class BarChartView @JvmOverloads constructor(
     private var entries: List<Pair<String, Int>> = emptyList()
 
     private val barPaint = Paint().apply {
-        color = 0xFF00E676.toInt(); isAntiAlias = true
+        color = 0xFFFFC107.toInt(); isAntiAlias = true
     }
     private val textPaint = Paint().apply {
-        color = 0xFFB0B0B0.toInt(); textSize = 30f; isAntiAlias = true
+        color = 0xFF616161.toInt(); textSize = 30f; isAntiAlias = true
     }
     private val valuePaint = Paint().apply {
-        color = 0xFFFFFFFF.toInt(); textSize = 30f; isAntiAlias = true
+        color = 0xFF212121.toInt(); textSize = 30f; isAntiAlias = true
         typeface = Typeface.DEFAULT_BOLD
     }
 

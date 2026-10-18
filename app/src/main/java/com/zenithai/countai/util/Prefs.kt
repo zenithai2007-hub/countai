@@ -22,7 +22,7 @@ object Prefs {
     const val LAST_MANUAL_SYNC = "last_manual_sync_at"
     const val THUMBS_UPLOADED = "thumbs_uploaded"
 
-    const val DEFAULT_CONFIDENCE = 0.5f
+    const val DEFAULT_CONFIDENCE = 0.6f
     const val DEFAULT_FPS = 10
 
     private fun prefs(context: Context) =

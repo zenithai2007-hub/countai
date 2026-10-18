@@ -76,6 +76,8 @@ class CameraFragment : Fragment() {
     private var cameraExecutor: ExecutorService? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraRunning = false
+    /** Back camera by default; the switch button toggles to front. */
+    private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var paused = false
     private var lastAnalyzeMs = 0L
 
@@ -148,8 +150,9 @@ class CameraFragment : Fragment() {
         buildLabelChips()
 
         binding.btnStartCamera.setOnClickListener { toggleCamera() }
+        binding.btnSwitchCamera.setOnClickListener { switchCamera() }
         binding.btnPause.setOnClickListener { togglePause() }
-        binding.btnReset.setOnClickListener { resetSession() }
+        binding.btnReset.setOnClickListener { confirmReset() }
         binding.btnCapture.setOnClickListener { captureAndSave() }
         binding.btnPhoto.setOnClickListener { photoPicker.launch("image/*") }
         binding.btnShare.setOnClickListener { shareCurrentResult() }
@@ -189,6 +192,9 @@ class CameraFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        setMicListening(false)
+        listeningToast?.cancel()
+        voiceHelper?.stopListening()
         stopCamera()
         synchronized(detectorLock) {
             try {
@@ -260,9 +266,13 @@ class CameraFragment : Fragment() {
                 analysis.setAnalyzer(getCameraExecutor(), analyzer)
 
                 cameraProvider?.unbindAll()
+                val selector = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                else
+                    CameraSelector.DEFAULT_BACK_CAMERA
                 cameraProvider?.bindToLifecycle(
                     viewLifecycleOwner,
-                    CameraSelector.DEFAULT_BACK_CAMERA,
+                    selector,
                     preview,
                     analysis,
                 )
@@ -284,6 +294,21 @@ class CameraFragment : Fragment() {
         }
         cameraRunning = false
         updateButtons()
+    }
+
+    /** Front/back toggle: flips the lens and rebinds the running camera. */
+    private fun switchCamera() {
+        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK)
+            CameraSelector.LENS_FACING_FRONT
+        else
+            CameraSelector.LENS_FACING_BACK
+        if (cameraRunning) {
+            // Rebind with the new lens: stop first so startCamera() re-runs.
+            stopCamera()
+            startCamera()
+        } else {
+            updateStatus(getString(R.string.camera_switched))
+        }
     }
 
     private fun getCameraExecutor(): ExecutorService {
@@ -433,6 +458,17 @@ class CameraFragment : Fragment() {
         )
     }
 
+    /** RESET asks first — one accidental tap shouldn't wipe a whole session. */
+    private fun confirmReset() {
+        if (effectiveSessionCounts().values.sum() == 0) return // nothing to clear
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.reset_confirm_title)
+            .setMessage(R.string.reset_confirm_message)
+            .setPositiveButton(R.string.reset) { _, _ -> resetSession() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun resetSession() {
         tracker.reset()
         manualAdjust.clear()
@@ -445,6 +481,7 @@ class CameraFragment : Fragment() {
         b.countRows.removeAllViews()
         b.warningBadge.visibility = View.GONE
         updateStatus(getString(R.string.status_reset))
+        updateButtons()
     }
 
     private fun buildLabelChips() {
@@ -695,28 +732,54 @@ class CameraFragment : Fragment() {
     private fun startVoiceListening() {
         val helper = voiceHelper ?: VoiceHelper(requireContext(), object : VoiceHelper.Listener {
             override fun onVoiceResult(text: String) {
+                setMicListening(false)
                 listeningToast?.cancel()
                 _binding?.etCommand?.setText(text)
                 processCommand(text)
             }
 
             override fun onVoiceError(message: String) {
+                setMicListening(false)
                 listeningToast?.cancel()
                 val msg = when (message) {
                     "no_speech" -> getString(R.string.voice_no_speech)
                     "mic_permission" -> getString(R.string.mic_permission_needed)
+                    "speech_unavailable" -> getString(R.string.voice_unavailable)
                     else -> getString(R.string.voice_failed)
                 }
+                updateStatus(msg)
                 toast(msg)
             }
         }).also { voiceHelper = it }
         if (!helper.isRecognitionAvailable()) {
-            toast(R.string.voice_failed)
+            updateStatus(getString(R.string.voice_unavailable))
+            toast(R.string.voice_unavailable)
             return
         }
+        setMicListening(true)
         listeningToast = Toast.makeText(requireContext(), R.string.mic_listening, Toast.LENGTH_LONG)
         listeningToast?.show()
-        helper.startListening()
+        try {
+            helper.startListening()
+        } catch (e: Throwable) {
+            setMicListening(false)
+            listeningToast?.cancel()
+            Log.w(TAG, "voice start failed", e)
+            toast(R.string.voice_failed)
+        }
+    }
+
+    /**
+     * Makes listening VISIBLE: the mic button turns yellow and the status
+     * line says "Listening… speak now", so the user always knows the mic
+     * heard the tap. Resets automatically on result/error.
+     */
+    private fun setMicListening(active: Boolean) {
+        val b = _binding ?: return
+        val ctx = context ?: return
+        b.btnMic.backgroundTintList =
+            ContextCompat.getColorStateList(ctx, if (active) R.color.accent else R.color.surface3)
+        if (active) updateStatus(getString(R.string.mic_listening_status))
     }
 
     // ---------------- verify count (trust & accuracy) ----------------
@@ -812,6 +875,8 @@ class CameraFragment : Fragment() {
             getString(if (cameraRunning) R.string.stop_camera else R.string.start_camera)
         b.btnPause.text = getString(if (paused) R.string.resume else R.string.pause)
         b.btnPause.isEnabled = cameraRunning
+        // RESET only makes sense once there's something to clear.
+        b.btnReset.isEnabled = cameraRunning || effectiveSessionCounts().values.sum() > 0
     }
 
     private fun updateStatus(text: String) {
